@@ -1,12 +1,16 @@
-import { ArrowRight, Info } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Info, Loader2, Sparkles } from 'lucide-react';
 import { TaskNode, TaskNodeData } from '@/components/TaskNode';
+import { decomposeTaskWithGemini } from '@/lib/gemini';
 
 interface TaskInputProps {
   onNext: (tasks: TaskNodeData[]) => void;
 }
 
 export function TaskInput({ onNext }: TaskInputProps) {
-  const exampleTasks: TaskNodeData[] = [
+  const [inputText, setInputText] = useState('Handle this patient report and notify the legal team');
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewTasks, setPreviewTasks] = useState<TaskNodeData[]>([
     {
       id: '1',
       label: 'Summarize report',
@@ -38,10 +42,26 @@ export function TaskInput({ onNext }: TaskInputProps) {
       x: 500,
       y: 240,
     },
-  ];
+  ]);
+  const [hasDecomposed, setHasDecomposed] = useState(false);
 
-  const handleDecompose = () => {
-    onNext(exampleTasks);
+  const handleDecompose = async () => {
+    if (!inputText.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      const tasks = await decomposeTaskWithGemini(inputText);
+      setPreviewTasks(tasks);
+      setHasDecomposed(true);
+    } catch (error) {
+      console.error('Failed to decompose task:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleContinue = () => {
+    onNext(previewTasks);
   };
 
   return (
@@ -59,17 +79,37 @@ export function TaskInput({ onNext }: TaskInputProps) {
           <textarea
             className="w-full h-32 px-4 py-3 border border-slate-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
             placeholder="Example: Handle this patient report and notify the legal team"
-            defaultValue="Handle this patient report and notify the legal team"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
           />
           
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-3">
             <button
               onClick={handleDecompose}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              disabled={isLoading || !inputText.trim()}
+              className="bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
             >
-              Decompose Task
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Analyzing with AI...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Decompose with Gemini
+                </>
+              )}
             </button>
+            {hasDecomposed && (
+              <button
+                onClick={handleContinue}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                Continue
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -80,16 +120,29 @@ export function TaskInput({ onNext }: TaskInputProps) {
           </h2>
 
           {/* SVG Canvas for connections */}
-          <div className="relative h-96 mb-4">
+          <div className="relative h-[450px] mb-4">
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              {/* Connection lines */}
-              <line x1="240" y1="140" x2="340" y2="240" stroke="#cbd5e1" strokeWidth="2" />
-              <line x1="440" y1="140" x2="340" y2="240" stroke="#cbd5e1" strokeWidth="2" />
-              <line x1="340" y1="280" x2="440" y2="280" stroke="#cbd5e1" strokeWidth="2" />
+              {/* Dynamic connection lines between tasks */}
+              {previewTasks.map((task, index) => {
+                if (index === previewTasks.length - 1) return null;
+                const nextTask = previewTasks[index + 1];
+                return (
+                  <line
+                    key={`line-${index}`}
+                    x1={task.x}
+                    y1={(task.y || 0) + 40}
+                    x2={nextTask.x}
+                    y2={(nextTask.y || 0) - 40}
+                    stroke="#cbd5e1"
+                    strokeWidth="2"
+                    strokeDasharray="4"
+                  />
+                );
+              })}
             </svg>
 
             {/* Task Nodes */}
-            {exampleTasks.map((task) => (
+            {previewTasks.map((task) => (
               <div
                 key={task.id}
                 className="absolute"
