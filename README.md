@@ -1,8 +1,10 @@
-# AI Task Delegation Framework
+# Mouse Framework 🖱️
 
 A modern human–AI collaboration interface that teaches users when to rely on an AI agent and when not to, with a strong focus on **high-stakes vs low-stakes decisions**, **reversibility**, and **user control**.
 
 ![Framework Preview](https://img.shields.io/badge/React-18.3-blue) ![Vite](https://img.shields.io/badge/Vite-6.3-purple) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan)
+
+> Named "Mouse Framework" for the visual node-based ("mouse dots") task visualization
 
 ## 🎯 Purpose
 
@@ -25,8 +27,8 @@ This interface treats AI as a **framework builder**, not just a rule-based execu
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/ai-task-delegation-framework.git
-cd ai-task-delegation-framework
+git clone https://github.com/growingpenguin/mouse-framework.git
+cd mouse-framework
 
 # Install dependencies
 npm install
