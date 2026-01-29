@@ -33,6 +33,10 @@ cd mouse-framework
 # Install dependencies
 npm install
 
+# Set up Gemini AI (optional but recommended)
+cp .env.example .env
+# Edit .env and add your API key
+
 # Start development server
 npm run dev
 ```
@@ -45,6 +49,39 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 npm run build
 npm run preview
 ```
+
+---
+
+## 🤖 Gemini AI Setup (Free!)
+
+This app uses **Google Gemini AI** to intelligently decompose your tasks. The AI is **completely free** to use!
+
+### Get Your Free API Key
+
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click **"Create API Key"**
+4. Copy the key
+
+### Add Your API Key
+
+```bash
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env and paste your key
+VITE_GEMINI_API_KEY=your_actual_api_key_here
+```
+
+### Free Tier Limits (Very Generous!)
+
+| Resource | Limit |
+|----------|-------|
+| Requests per minute | 15 RPM |
+| Requests per day | 1,500 RPD |
+| Tokens per month | 1,000,000 |
+
+> 💡 **No API key?** No problem! The app works without it using smart fallback task decomposition based on keywords in your request.
 
 ---
 
@@ -132,7 +169,7 @@ The application consists of **5 connected screens** that guide users through und
 ## 🏗️ Project Structure
 
 ```
-ai-task-delegation-framework/
+mouse-framework/
 ├── src/
 │   ├── components/
 │   │   ├── ui/              # Reusable UI components (shadcn/ui)
@@ -142,6 +179,8 @@ ai-task-delegation-framework/
 │   │   ├── DelegationRules.tsx # Screen 3: Stakes & Delegation
 │   │   ├── ReversibilityCheckpoints.tsx # Screen 4: Safety
 │   │   └── LearningOutcome.tsx # Screen 5: Summary
+│   ├── lib/
+│   │   └── gemini.ts        # Gemini AI integration
 │   ├── styles/
 │   │   ├── tailwind.css     # Tailwind imports
 │   │   ├── fonts.css        # Font configuration
@@ -149,6 +188,7 @@ ai-task-delegation-framework/
 │   │   └── theme.css        # Theme variables
 │   ├── App.tsx              # Main app with screen navigation
 │   └── main.tsx             # Entry point
+├── .env.example             # Environment template
 ├── index.html
 ├── package.json
 ├── tsconfig.json
@@ -164,6 +204,7 @@ ai-task-delegation-framework/
 - **TypeScript** - Type safety
 - **Vite** - Build tool & dev server
 - **Tailwind CSS 4** - Utility-first styling
+- **Google Gemini AI** - Task decomposition (free tier)
 - **Lucide React** - Icons
 - **Radix UI** - Accessible UI primitives
 

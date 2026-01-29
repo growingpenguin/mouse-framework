@@ -1,6 +1,8 @@
 import type { TaskNodeData, RiskType } from '@/components/TaskNode';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+// Using gemini-1.5-flash - FREE TIER: 15 RPM, 1M tokens/month, 1500 RPD
+// See: https://ai.google.dev/pricing
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 interface GeminiResponse {
@@ -14,6 +16,13 @@ interface GeminiResponse {
 }
 
 export async function decomposeTaskWithGemini(userRequest: string): Promise<TaskNodeData[]> {
+  // Check if API key is configured
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_gemini_api_key_here') {
+    console.warn('Gemini API key not configured. Using fallback tasks.');
+    console.info('To enable AI: Get a free API key at https://aistudio.google.com/app/apikey');
+    return getFallbackTasks(userRequest);
+  }
+
   const prompt = `You are an AI task decomposition assistant. Analyze the following user request and break it down into individual tasks.
 
 For each task, determine:
@@ -91,16 +100,48 @@ Generate 3-6 tasks that logically decompose this request.`;
   } catch (error) {
     console.error('Gemini API error:', error);
     // Return fallback tasks if API fails
-    return getFallbackTasks();
+    return getFallbackTasks(userRequest);
   }
 }
 
-function getFallbackTasks(): TaskNodeData[] {
+function getFallbackTasks(userRequest?: string): TaskNodeData[] {
+  // Smart fallback based on keywords in the request
+  const request = (userRequest || '').toLowerCase();
+  
+  // Check for common patterns and return relevant fallback tasks
+  if (request.includes('patient') || request.includes('medical') || request.includes('health')) {
+    return [
+      { id: '1', label: 'Summarize report', stakes: 'low', x: 200, y: 120 },
+      { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 450, y: 120 },
+      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 200, y: 280 },
+      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+    ];
+  }
+  
+  if (request.includes('payment') || request.includes('payroll') || request.includes('financial')) {
+    return [
+      { id: '1', label: 'Gather data', stakes: 'low', x: 200, y: 120 },
+      { id: '2', label: 'Calculate amounts', stakes: 'low', x: 450, y: 120 },
+      { id: '3', label: 'Verify accounts', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
+      { id: '4', label: 'Process payment', stakes: 'high', riskTypes: ['irreversible', 'legal'], x: 450, y: 280 },
+    ];
+  }
+  
+  if (request.includes('email') || request.includes('send') || request.includes('notify')) {
+    return [
+      { id: '1', label: 'Draft message', stakes: 'low', x: 200, y: 120 },
+      { id: '2', label: 'Review content', stakes: 'low', x: 450, y: 120 },
+      { id: '3', label: 'Verify recipients', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
+      { id: '4', label: 'Send email', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+    ];
+  }
+  
+  // Default generic tasks
   return [
     { id: '1', label: 'Analyze request', stakes: 'low', x: 200, y: 120 },
     { id: '2', label: 'Gather information', stakes: 'low', x: 450, y: 120 },
     { id: '3', label: 'Process data', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
-    { id: '4', label: 'Make decision', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+    { id: '4', label: 'Execute action', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
   ];
 }
 
