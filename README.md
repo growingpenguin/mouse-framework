@@ -1,8 +1,8 @@
 # Mouse Framework 🖱️
 
-A modern human–AI collaboration interface that teaches users when to rely on an AI agent and when not to, with a strong focus on **high-stakes vs low-stakes decisions**, **reversibility**, and **user control**.
+A modern human–AI collaboration interface that teaches users when to rely on an AI agent and when not to, with a strong focus on **high-stakes vs low-stakes decisions**, **reversibility**, **trust calibration**, and **user control**.
 
-![Framework Preview](https://img.shields.io/badge/React-18.3-blue) ![Vite](https://img.shields.io/badge/Vite-6.3-purple) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan)
+![Framework Preview](https://img.shields.io/badge/React-18.3-blue) ![Vite](https://img.shields.io/badge/Vite-6.3-purple) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan) ![SelfCheckGPT](https://img.shields.io/badge/SelfCheckGPT-Integrated-violet)
 
 > Named "Mouse Framework" for the visual node-based ("mouse dots") task visualization
 
@@ -13,7 +13,34 @@ This interface treats AI as a **framework builder**, not just a rule-based execu
 ### Key Principles
 - **Low-stakes tasks** (reversible, informational) → Safe to delegate to AI
 - **High-stakes tasks** (irreversible, sensitive, critical) → Require human judgment
+- **Trust calibration** → SelfCheckGPT detects AI uncertainty to prevent over-trust
 - **User maintains control** at every step
+
+---
+
+## 🧠 SelfCheckGPT Integration
+
+This project integrates concepts from the research paper:
+
+> **"SELFCHECKGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models"**  
+> Manakul, Liusie, Gales (2023) - University of Cambridge
+
+### The Problem
+In high-stakes settings, larger models often sound more confident, causing people to over-generalize from a few good answers and trust them too much. This leads to over-deployment and more unnoticed mistakes.
+
+### The Solution
+SelfCheckGPT detects when AI responses are inconsistent across multiple samples:
+- **High consistency** → Likely factual, safe to trust
+- **Low consistency** → Potential hallucination, human review required
+
+### Key Insight
+> *"In high-stakes AI, success depends on calibrated human trust, not smarter-sounding answers."*
+
+### How It Works
+1. Generate N stochastic samples from LLM
+2. Compare consistency between samples
+3. High disagreement = potential hallucination = WARNING
+4. High-stakes + low confidence = DO NOT DELEGATE
 
 ---
 
@@ -33,10 +60,6 @@ cd mouse-framework
 # Install dependencies
 npm install
 
-# Set up Gemini AI (optional but recommended)
-cp .env.example .env
-# Edit .env and add your API key
-
 # Start development server
 npm run dev
 ```
@@ -52,117 +75,102 @@ npm run preview
 
 ---
 
-## 🤖 Gemini AI Setup (Free!)
+## 🤖 AI Integration Options
 
-This app uses **Google Gemini AI** to intelligently decompose your tasks. The AI is **completely free** to use!
+### Option 1: Demo Mode (No Setup Required!)
+Just click **"Try Demo (No API Key)"** on the first screen to explore with pre-built examples.
 
-### Get Your Free API Key
+### Option 2: Gemini AI (Free!)
+
+Get intelligent task decomposition with Google's free Gemini API:
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click **"Create API Key"**
-4. Copy the key
-
-### Add Your API Key
+2. Sign in and click **"Create API Key"**
+3. Set up your environment:
 
 ```bash
-# Copy the example env file
 cp .env.example .env
-
-# Edit .env and paste your key
-VITE_GEMINI_API_KEY=your_actual_api_key_here
+# Edit .env and add: VITE_GEMINI_API_KEY=your_key_here
 ```
 
-### Free Tier Limits (Very Generous!)
-
+**Free Tier Limits:**
 | Resource | Limit |
 |----------|-------|
 | Requests per minute | 15 RPM |
 | Requests per day | 1,500 RPD |
 | Tokens per month | 1,000,000 |
 
-> 💡 **No API key?** No problem! The app works without it using smart fallback task decomposition based on keywords in your request.
-
 ---
 
 ## 📱 Application Flow
 
-The application consists of **5 connected screens** that guide users through understanding AI delegation:
+The application consists of **5 connected screens**:
 
 ### Screen 1: Task Input & Decomposition
 **"What do you want to do?"**
 
-- Enter a high-level request (e.g., "Handle this patient report and notify the legal team")
-- AI automatically decomposes the request into multiple task nodes
-- Visual framework shows connected dots:
-  - 🟢 **Green** = Low-stakes (reversible, informational)
-  - 🔴 **Red** = High-stakes (irreversible, sensitive)
-- Warning: "High-stakes tasks should not be delegated to AI"
-
-➡️ Click **"Decompose Task"** to continue
+- Enter a high-level request or click **"Try Demo"**
+- AI decomposes the request into task nodes
+- Visual framework shows:
+  - 🟢 **Green** = Low-stakes (reversible)
+  - 🔴 **Red** = High-stakes (irreversible)
 
 ---
 
 ### Screen 2: Framework View (Editable Process)
 **"Your process framework"**
 
-- View the task workflow as connected nodes
-- Click any task node to:
-  - Edit its description
-  - Remove it from the workflow
-  - Merge with another task
-  - Split into subtasks
-- Message: "The AI proposes a framework. You control it."
-
-➡️ Click **"Continue to Delegation"** to continue
+Interactive controls:
+- ✏️ **Edit Description** - Rename any task
+- 🗑️ **Remove** - Delete tasks from workflow
+- ⬆️⬇️ **Reorder** - Move tasks up/down
+- 🔄 **Toggle Stakes** - Change high/low stakes
+- ➕ **Add New Task** - Create custom tasks
 
 ---
 
 ### Screen 3: Delegation & Stakes Rules
 **"Who should handle each part?"**
 
-- Each task shows its delegation status:
-  - ✅ Low-stakes → "Delegate to AI" (enabled toggle)
-  - ❌ High-stakes → "Human decision required" (disabled toggle)
-- Clear reasoning icons for high-stakes:
-  - 🔒 Irreversible action
-  - ⚖️ Legal/medical/security impact
-  - 🏢 Company-wide risk
-- Rule: "AI can assist high-stakes tasks, but should not decide them."
+Two analysis views:
 
-➡️ Click **"Continue to Reversibility"** to continue
+| View | Description |
+|------|-------------|
+| **Stakes-Based** | Traditional high/low stakes delegation |
+| **SelfCheckGPT** | AI confidence analysis with consistency scores |
+
+SelfCheckGPT features:
+- 📊 Per-task confidence percentages
+- ⚠️ Warnings for low-consistency tasks
+- 📈 Overall consistency summary
+- 💡 Research insight toggle
 
 ---
 
 ### Screen 4: Reversibility & Checkpoints
 **"Control & safety"**
 
-- Reversibility controls:
-  - **Undo** - Reverse any action immediately
-  - **Rollback** - Return to any previous state
-  - **Preview** - Review changes before commit
-- Mandatory checkpoints before:
-  - 📤 Sending data
-  - 💳 Making payments
-  - 🔐 Changing security settings
-- Message: "Delegation never removes your control."
+Interactive controls:
+- **Undo** - Click to undo last action
+- **Rollback** - View history, restore any state
+- **Preview** - See pending changes before commit
 
-➡️ Click **"Continue to Learning Summary"** to continue
+Mandatory checkpoints:
+- 📤 Sending data → Approve
+- 💳 Making payments → Approve
+- 🔐 Security changes → Approve
+
+Progress bar shows checkpoint completion.
 
 ---
 
 ### Screen 5: Learning & User Improvement
 **"What you learned"**
 
-- Summary of safely delegated tasks vs human-controlled tasks
-- Key takeaways:
-  1. Low-stakes, reversible tasks are safe to delegate
-  2. High-stakes, irreversible tasks require human judgment
-  3. AI assists, but you maintain control
+- Summary of delegated vs human-controlled tasks
+- Key takeaways for future decisions
 - Collaboration statistics
-- Core principle: "The AI helps you improve your process, not replace your decisions."
-
-➡️ Click **"Try Another Workflow"** to restart
+- Core principle: "AI helps improve your process, not replace your decisions."
 
 ---
 
@@ -172,27 +180,23 @@ The application consists of **5 connected screens** that guide users through und
 mouse-framework/
 ├── src/
 │   ├── components/
-│   │   ├── ui/              # Reusable UI components (shadcn/ui)
-│   │   ├── TaskNode.tsx     # Task node component (green/red dots)
-│   │   ├── TaskInput.tsx    # Screen 1: Input & Decomposition
-│   │   ├── FrameworkView.tsx # Screen 2: Editable Framework
-│   │   ├── DelegationRules.tsx # Screen 3: Stakes & Delegation
+│   │   ├── ui/                    # Reusable UI components
+│   │   ├── TaskNode.tsx           # Task node (green/red dots)
+│   │   ├── TaskInput.tsx          # Screen 1: Input
+│   │   ├── FrameworkView.tsx      # Screen 2: Editable Framework
+│   │   ├── DelegationRules.tsx    # Screen 3: Stakes + SelfCheck
+│   │   ├── SelfCheckPanel.tsx     # SelfCheckGPT analysis UI
 │   │   ├── ReversibilityCheckpoints.tsx # Screen 4: Safety
-│   │   └── LearningOutcome.tsx # Screen 5: Summary
+│   │   └── LearningOutcome.tsx    # Screen 5: Summary
 │   ├── lib/
-│   │   └── gemini.ts        # Gemini AI integration
+│   │   ├── gemini.ts              # Gemini AI integration
+│   │   └── selfcheck.ts           # SelfCheckGPT logic
 │   ├── styles/
-│   │   ├── tailwind.css     # Tailwind imports
-│   │   ├── fonts.css        # Font configuration
-│   │   ├── index.css        # Main styles
-│   │   └── theme.css        # Theme variables
-│   ├── App.tsx              # Main app with screen navigation
-│   └── main.tsx             # Entry point
-├── .env.example             # Environment template
-├── index.html
+│   ├── App.tsx
+│   └── main.tsx
+├── .env.example
 ├── package.json
 ├── tsconfig.json
-├── vite.config.ts
 └── README.md
 ```
 
@@ -200,13 +204,16 @@ mouse-framework/
 
 ## 🛠️ Tech Stack
 
-- **React 18** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool & dev server
-- **Tailwind CSS 4** - Utility-first styling
-- **Google Gemini AI** - Task decomposition (free tier)
-- **Lucide React** - Icons
-- **Radix UI** - Accessible UI primitives
+| Technology | Purpose |
+|------------|---------|
+| React 18 | UI framework |
+| TypeScript | Type safety |
+| Vite | Build tool & dev server |
+| Tailwind CSS 4 | Styling |
+| Google Gemini AI | Task decomposition |
+| SelfCheckGPT | Hallucination detection |
+| Lucide React | Icons |
+| Radix UI | Accessible primitives |
 
 ---
 
@@ -215,10 +222,19 @@ mouse-framework/
 | Principle | Implementation |
 |-----------|----------------|
 | **Visual Stakes** | Green (safe) vs Red (danger) color coding |
+| **Trust Calibration** | SelfCheckGPT confidence scores |
 | **User Control** | Editable framework, not fixed rules |
 | **Reversibility** | Undo, rollback, preview at every step |
-| **Education** | Teaching users over time, not just blocking |
-| **Enterprise-grade** | Professional, calm, instructional UI |
+| **Education** | Teaching users over time |
+| **Enterprise-grade** | Professional, calm UI |
+
+---
+
+## 📚 Research References
+
+- **SelfCheckGPT Paper:** Manakul, P., Liusie, A., & Gales, M. J. F. (2023). *SELFCHECKGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models.* University of Cambridge. [arXiv:2303.08896](https://arxiv.org/abs/2303.08896)
+
+- **GitHub:** [potsawee/selfcheckgpt](https://github.com/potsawee/selfcheckgpt)
 
 ---
 
@@ -240,7 +256,7 @@ This project is for educational purposes as part of an AI Agents class project.
 
 ## 🙏 Acknowledgments
 
-- Design inspired by human-AI collaboration best practices
+- SelfCheckGPT research by University of Cambridge
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide](https://lucide.dev/)
-
+- Design inspired by human-AI collaboration best practices
