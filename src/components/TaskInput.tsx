@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Info, Loader2, Sparkles } from 'lucide-react';
+import { ArrowRight, Info, Loader2, Sparkles, Play } from 'lucide-react';
 import { TaskNode, TaskNodeData } from '@/components/TaskNode';
 import { decomposeTaskWithGemini } from '@/lib/gemini';
 
@@ -7,42 +7,45 @@ interface TaskInputProps {
   onNext: (tasks: TaskNodeData[]) => void;
 }
 
+// Demo tasks for the default example - no API key needed!
+const DEMO_TASKS: TaskNodeData[] = [
+  {
+    id: '1',
+    label: 'Summarize report',
+    stakes: 'low',
+    x: 200,
+    y: 120,
+  },
+  {
+    id: '2',
+    label: 'Access patient data',
+    stakes: 'high',
+    riskTypes: ['security', 'legal'],
+    x: 450,
+    y: 120,
+  },
+  {
+    id: '3',
+    label: 'Legal interpretation',
+    stakes: 'high',
+    riskTypes: ['legal', 'company-wide'],
+    x: 200,
+    y: 280,
+  },
+  {
+    id: '4',
+    label: 'Send external email',
+    stakes: 'high',
+    riskTypes: ['irreversible', 'company-wide'],
+    x: 450,
+    y: 280,
+  },
+];
+
 export function TaskInput({ onNext }: TaskInputProps) {
   const [inputText, setInputText] = useState('Handle this patient report and notify the legal team');
   const [isLoading, setIsLoading] = useState(false);
-  const [previewTasks, setPreviewTasks] = useState<TaskNodeData[]>([
-    {
-      id: '1',
-      label: 'Summarize report',
-      stakes: 'low',
-      x: 200,
-      y: 100,
-    },
-    {
-      id: '2',
-      label: 'Access patient data',
-      stakes: 'high',
-      riskTypes: ['security', 'legal'],
-      x: 400,
-      y: 100,
-    },
-    {
-      id: '3',
-      label: 'Legal interpretation',
-      stakes: 'high',
-      riskTypes: ['legal', 'company-wide'],
-      x: 300,
-      y: 240,
-    },
-    {
-      id: '4',
-      label: 'Send external email',
-      stakes: 'high',
-      riskTypes: ['irreversible', 'company-wide'],
-      x: 500,
-      y: 240,
-    },
-  ]);
+  const [previewTasks, setPreviewTasks] = useState<TaskNodeData[]>(DEMO_TASKS);
   const [hasDecomposed, setHasDecomposed] = useState(false);
 
   const handleDecompose = async () => {
@@ -58,6 +61,13 @@ export function TaskInput({ onNext }: TaskInputProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Quick demo - skip API call and use pre-made tasks
+  const handleTryDemo = () => {
+    setInputText('Handle this patient report and notify the legal team');
+    setPreviewTasks(DEMO_TASKS);
+    setHasDecomposed(true);
   };
 
   const handleContinue = () => {
@@ -83,7 +93,19 @@ export function TaskInput({ onNext }: TaskInputProps) {
             onChange={(e) => setInputText(e.target.value)}
           />
           
-          <div className="mt-4 flex justify-end gap-3">
+          <div className="mt-4 flex flex-wrap justify-end gap-3">
+            {/* Demo button - no API key needed! */}
+            {!hasDecomposed && (
+              <button
+                onClick={handleTryDemo}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                <Play className="w-4 h-4" />
+                Try Demo (No API Key)
+              </button>
+            )}
+            
+            {/* AI decompose button */}
             <button
               onClick={handleDecompose}
               disabled={isLoading || !inputText.trim()}
@@ -101,6 +123,8 @@ export function TaskInput({ onNext }: TaskInputProps) {
                 </>
               )}
             </button>
+            
+            {/* Continue button - shows after decomposition */}
             {hasDecomposed && (
               <button
                 onClick={handleContinue}
