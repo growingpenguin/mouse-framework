@@ -2,9 +2,17 @@
 
 A modern human–AI collaboration interface that teaches users when to rely on an AI agent and when not to, with a strong focus on **high-stakes vs low-stakes decisions**, **reversibility**, **trust calibration**, and **user control**.
 
-![Framework Preview](https://img.shields.io/badge/React-18.3-blue) ![Vite](https://img.shields.io/badge/Vite-6.3-purple) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan) ![SelfCheckGPT](https://img.shields.io/badge/SelfCheckGPT-Integrated-violet)
+![Framework Preview](https://img.shields.io/badge/React-18.3-blue) ![Vite](https://img.shields.io/badge/Vite-6.3-purple) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1-cyan) ![d3-force](https://img.shields.io/badge/d3--force-Integrated-orange) ![SelfCheckGPT](https://img.shields.io/badge/SelfCheckGPT-Integrated-violet)
 
 > Named "Mouse Framework" for the visual node-based ("mouse dots") task visualization
+
+## 🌐 Live Demo
+
+**Try it now:** 👉 [https://growingpenguin.github.io/mouse-framework/](https://growingpenguin.github.io/mouse-framework/)
+
+No installation required! Choose from 3 demo scenarios or use Gemini AI.
+
+---
 
 ## 🎯 Purpose
 
@@ -18,29 +26,39 @@ This interface treats AI as a **framework builder**, not just a rule-based execu
 
 ---
 
-## 🧠 SelfCheckGPT Integration
+## ✨ Features
 
-This project integrates concepts from the research paper:
+### 🎨 Force-Directed Layout (New!)
 
-> **"SELFCHECKGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models"**  
-> Manakul, Liusie, Gales (2023) - University of Cambridge
+Task nodes use **d3-force** with Fruchterman–Reingold style physics:
 
-### The Problem
-In high-stakes settings, larger models often sound more confident, causing people to over-generalize from a few good answers and trust them too much. This leads to over-deployment and more unnoticed mistakes.
+| Force | Purpose |
+|-------|---------|
+| `forceManyBody` | Nodes repel each other |
+| `forceCollide` | Prevents overlap with collision detection |
+| `forceLink` | Connected nodes stay closer |
+| `forceCenter` | Keeps graph centered |
+| `forceX/Y` | Attracts to optimal grid positions |
 
-### The Solution
-SelfCheckGPT detects when AI responses are inconsistent across multiple samples:
+**Dynamic behavior:**
+- Add a new task → Simulation re-runs automatically
+- Nodes spread out smoothly with no overlaps
+- Connection lines update in real-time
+- Works for 1-10+ nodes
+
+### 📋 3 Demo Scenarios (No API Key Required!)
+
+| Scenario | Domain | Tasks |
+|----------|--------|-------|
+| 🏥 **Healthcare** | Patient report handling | Summarize → Access Data → Interpret → Notify |
+| 💰 **Finance** | Payroll processing | Calculate → Review → Approve → Transfer |
+| 🖥️ **IT/DevOps** | Production deployment | Test → Build → Deploy → Update Firewall |
+
+### 🧠 SelfCheckGPT Integration
+
+Detects AI hallucination by measuring consistency across samples:
 - **High consistency** → Likely factual, safe to trust
 - **Low consistency** → Potential hallucination, human review required
-
-### Key Insight
-> *"In high-stakes AI, success depends on calibrated human trust, not smarter-sounding answers."*
-
-### How It Works
-1. Generate N stochastic samples from LLM
-2. Compare consistency between samples
-3. High disagreement = potential hallucination = WARNING
-4. High-stakes + low confidence = DO NOT DELEGATE
 
 ---
 
@@ -64,7 +82,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:5173/mouse-framework/](http://localhost:5173/mouse-framework/) in your browser.
 
 ### Build for Production
 
@@ -78,7 +96,10 @@ npm run preview
 ## 🤖 AI Integration Options
 
 ### Option 1: Demo Mode (No Setup Required!)
-Just click **"Try Demo (No API Key)"** on the first screen to explore with pre-built examples.
+Click any of the **3 demo scenario cards** to explore pre-built examples:
+- Healthcare, Finance, or IT/DevOps workflows
+- See how tasks are categorized as high/low stakes
+- Full interactive experience without API keys
 
 ### Option 2: Gemini AI (Free!)
 
@@ -109,8 +130,9 @@ The application consists of **5 connected screens**:
 ### Screen 1: Task Input & Decomposition
 **"What do you want to do?"**
 
-- Enter a high-level request or click **"Try Demo"**
+- Choose from **3 demo scenarios** or enter custom text
 - AI decomposes the request into task nodes
+- **Force-directed layout** positions nodes automatically
 - Visual framework shows:
   - 🟢 **Green** = Low-stakes (reversible)
   - 🔴 **Red** = High-stakes (irreversible)
@@ -125,7 +147,11 @@ Interactive controls:
 - 🗑️ **Remove** - Delete tasks from workflow
 - ⬆️⬇️ **Reorder** - Move tasks up/down
 - 🔄 **Toggle Stakes** - Change high/low stakes
-- ➕ **Add New Task** - Create custom tasks
+- ➕ **Add New Task** - Creates node with force simulation
+
+**Dynamic connections:**
+- Lines auto-generated based on task count
+- Connection count shown in bottom-right corner
 
 ---
 
@@ -160,8 +186,6 @@ Mandatory checkpoints:
 - 💳 Making payments → Approve
 - 🔐 Security changes → Approve
 
-Progress bar shows checkpoint completion.
-
 ---
 
 ### Screen 5: Learning & User Improvement
@@ -182,7 +206,8 @@ mouse-framework/
 │   ├── components/
 │   │   ├── ui/                    # Reusable UI components
 │   │   ├── TaskNode.tsx           # Task node (green/red dots)
-│   │   ├── TaskInput.tsx          # Screen 1: Input
+│   │   ├── TaskCanvas.tsx         # Force-directed layout canvas
+│   │   ├── TaskInput.tsx          # Screen 1: Input + Demo scenarios
 │   │   ├── FrameworkView.tsx      # Screen 2: Editable Framework
 │   │   ├── DelegationRules.tsx    # Screen 3: Stakes + SelfCheck
 │   │   ├── SelfCheckPanel.tsx     # SelfCheckGPT analysis UI
@@ -190,10 +215,14 @@ mouse-framework/
 │   │   └── LearningOutcome.tsx    # Screen 5: Summary
 │   ├── lib/
 │   │   ├── gemini.ts              # Gemini AI integration
-│   │   └── selfcheck.ts           # SelfCheckGPT logic
+│   │   ├── selfcheck.ts           # SelfCheckGPT logic
+│   │   └── useForceLayout.ts      # d3-force simulation hook
 │   ├── styles/
 │   ├── App.tsx
 │   └── main.tsx
+├── .github/
+│   └── workflows/
+│       └── deploy.yml             # GitHub Pages auto-deploy
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
@@ -210,10 +239,37 @@ mouse-framework/
 | TypeScript | Type safety |
 | Vite | Build tool & dev server |
 | Tailwind CSS 4 | Styling |
+| **d3-force** | Force-directed graph layout |
 | Google Gemini AI | Task decomposition |
 | SelfCheckGPT | Hallucination detection |
 | Lucide React | Icons |
 | Radix UI | Accessible primitives |
+
+---
+
+## 🔬 Force Layout Algorithm
+
+The force simulation uses d3-force with these parameters:
+
+```typescript
+forceSimulation(nodes)
+  .force('charge', forceManyBody().strength(-300 - nodes.length * 20))
+  .force('collide', forceCollide().radius(85).strength(1))
+  .force('link', forceLink(connections).distance(150))
+  .force('center', forceCenter(width/2, height/2))
+  .force('x', forceX(targetX).strength(0.2))
+  .force('y', forceY(targetY).strength(0.2))
+```
+
+**Dynamic grid positioning:**
+| Nodes | Layout |
+|-------|--------|
+| 1 | Centered |
+| 2 | Side by side |
+| 3 | Triangle |
+| 4 | 2×2 grid |
+| 5 | 2-2-1 pyramid |
+| 6+ | √n × √n grid |
 
 ---
 
@@ -225,8 +281,8 @@ mouse-framework/
 | **Trust Calibration** | SelfCheckGPT confidence scores |
 | **User Control** | Editable framework, not fixed rules |
 | **Reversibility** | Undo, rollback, preview at every step |
+| **Force Physics** | Nodes spread naturally, no overlaps |
 | **Education** | Teaching users over time |
-| **Enterprise-grade** | Professional, calm UI |
 
 ---
 
@@ -234,7 +290,9 @@ mouse-framework/
 
 - **SelfCheckGPT Paper:** Manakul, P., Liusie, A., & Gales, M. J. F. (2023). *SELFCHECKGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models.* University of Cambridge. [arXiv:2303.08896](https://arxiv.org/abs/2303.08896)
 
-- **GitHub:** [potsawee/selfcheckgpt](https://github.com/potsawee/selfcheckgpt)
+- **Force-Directed Graphs:** Fruchterman, T. M. J., & Reingold, E. M. (1991). *Graph Drawing by Force-Directed Placement.* Software: Practice and Experience.
+
+- **d3-force:** [https://github.com/d3/d3-force](https://github.com/d3/d3-force)
 
 ---
 
@@ -242,9 +300,16 @@ mouse-framework/
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Test your changes (`npm run build`)
+4. Merge to develop (`git checkout develop && git merge feature/amazing-feature`)
+5. Test on develop (`npm run build`)
+6. Merge to main (`git checkout main && git merge develop`)
+7. Push and auto-deploy!
+
+### Branch Strategy
+```
+feature/* → develop → main → GitHub Pages
+```
 
 ---
 
@@ -257,6 +322,7 @@ This project is for educational purposes as part of an AI Agents class project.
 ## 🙏 Acknowledgments
 
 - SelfCheckGPT research by University of Cambridge
+- Force-directed layout powered by [d3-force](https://github.com/d3/d3-force)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - Icons from [Lucide](https://lucide.dev/)
 - Design inspired by human-AI collaboration best practices
