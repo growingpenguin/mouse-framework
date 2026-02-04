@@ -78,14 +78,14 @@ Generate 3-6 tasks that logically decompose this request.`;
       riskTypes?: RiskType[];
     }>;
 
-    // Add IDs and positions for visualization
+    // Add IDs and positions for visualization (matching improved layout)
     const positions = [
-      { x: 200, y: 120 },
+      { x: 150, y: 120 },
       { x: 450, y: 120 },
-      { x: 150, y: 280 },
-      { x: 350, y: 280 },
-      { x: 550, y: 280 },
-      { x: 350, y: 420 },
+      { x: 150, y: 380 },
+      { x: 450, y: 380 },
+      { x: 300, y: 250 },
+      { x: 300, y: 480 },
     ];
 
     return tasks.map((task, index) => ({
@@ -111,37 +111,37 @@ function getFallbackTasks(userRequest?: string): TaskNodeData[] {
   // Check for common patterns and return relevant fallback tasks
   if (request.includes('patient') || request.includes('medical') || request.includes('health')) {
     return [
-      { id: '1', label: 'Summarize report', stakes: 'low', x: 200, y: 120 },
+      { id: '1', label: 'Summarize report', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 450, y: 120 },
-      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 200, y: 280 },
-      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 150, y: 380 },
+      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 380 },
     ];
   }
   
   if (request.includes('payment') || request.includes('payroll') || request.includes('financial')) {
     return [
-      { id: '1', label: 'Gather data', stakes: 'low', x: 200, y: 120 },
+      { id: '1', label: 'Gather data', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Calculate amounts', stakes: 'low', x: 450, y: 120 },
-      { id: '3', label: 'Verify accounts', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
-      { id: '4', label: 'Process payment', stakes: 'high', riskTypes: ['irreversible', 'legal'], x: 450, y: 280 },
+      { id: '3', label: 'Verify accounts', stakes: 'high', riskTypes: ['security'], x: 150, y: 380 },
+      { id: '4', label: 'Process payment', stakes: 'high', riskTypes: ['irreversible', 'legal'], x: 450, y: 380 },
     ];
   }
   
   if (request.includes('email') || request.includes('send') || request.includes('notify')) {
     return [
-      { id: '1', label: 'Draft message', stakes: 'low', x: 200, y: 120 },
+      { id: '1', label: 'Draft message', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Review content', stakes: 'low', x: 450, y: 120 },
-      { id: '3', label: 'Verify recipients', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
-      { id: '4', label: 'Send email', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+      { id: '3', label: 'Verify recipients', stakes: 'high', riskTypes: ['security'], x: 150, y: 380 },
+      { id: '4', label: 'Send email', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 380 },
     ];
   }
   
   // Default generic tasks
   return [
-    { id: '1', label: 'Analyze request', stakes: 'low', x: 200, y: 120 },
+    { id: '1', label: 'Analyze request', stakes: 'low', x: 150, y: 120 },
     { id: '2', label: 'Gather information', stakes: 'low', x: 450, y: 120 },
-    { id: '3', label: 'Process data', stakes: 'high', riskTypes: ['security'], x: 200, y: 280 },
-    { id: '4', label: 'Execute action', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 280 },
+    { id: '3', label: 'Process data', stakes: 'high', riskTypes: ['security'], x: 150, y: 380 },
+    { id: '4', label: 'Execute action', stakes: 'high', riskTypes: ['irreversible'], x: 450, y: 380 },
   ];
 }
 

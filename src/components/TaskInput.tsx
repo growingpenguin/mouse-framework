@@ -27,7 +27,11 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     icon: Stethoscope,
     color: 'text-rose-600',
     gradient: 'from-rose-500 to-pink-500',
-    prompt: 'Handle this patient report and notify the legal team',
+    prompt: `I need to organize the following tasks for a patient case:
+1. Read and summarize the patient's medical report
+2. Access the patient's protected health information (PHI) from the database
+3. Provide medical interpretation of the lab results
+4. Send notification email to the legal team about potential malpractice concerns`,
     tasks: [
       { id: '1', label: 'Summarize report', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 450, y: 120 },
@@ -42,7 +46,11 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     icon: DollarSign,
     color: 'text-emerald-600',
     gradient: 'from-emerald-500 to-teal-500',
-    prompt: 'Process quarterly payroll and approve employee bonuses',
+    prompt: `I need to organize these quarterly payroll tasks:
+1. Calculate total payroll based on employee hours and salaries
+2. Review performance data to determine bonus eligibility
+3. Get CFO approval for bonus payments over $10,000
+4. Execute wire transfers to employee bank accounts`,
     tasks: [
       { id: '1', label: 'Calculate payroll', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Review bonus criteria', stakes: 'low', x: 450, y: 120 },
@@ -57,7 +65,11 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     icon: Server,
     color: 'text-violet-600',
     gradient: 'from-violet-500 to-purple-500',
-    prompt: 'Deploy the new release to production and update security settings',
+    prompt: `I need to organize these deployment tasks:
+1. Run the automated test suite on the staging environment  
+2. Build Docker images and push to container registry
+3. Deploy v2.5.0 to production Kubernetes cluster
+4. Update firewall rules to allow new API endpoints`,
     tasks: [
       { id: '1', label: 'Run test suite', stakes: 'low', x: 150, y: 120 },
       { id: '2', label: 'Build artifacts', stakes: 'low', x: 450, y: 120 },
