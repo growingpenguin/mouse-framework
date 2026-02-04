@@ -262,3 +262,4 @@ export function SelfCheckPanel({ results, summary }: SelfCheckPanelProps) {
   );
 }
 
+
