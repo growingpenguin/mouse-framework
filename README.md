@@ -158,18 +158,82 @@ Interactive controls:
 ### Screen 3: Delegation & Stakes Rules
 **"Who should handle each part?"**
 
-Two analysis views:
+This screen helps users decide which tasks can be safely delegated to AI and which require human judgment. It provides **two different lenses**:
 
-| View | Description |
-|------|-------------|
-| **Stakes-Based** | Traditional high/low stakes delegation |
-| **SelfCheckGPT** | AI confidence analysis with consistency scores |
+#### View 1: Stakes-Based (Traditional)
 
-SelfCheckGPT features:
-- 📊 Per-task confidence percentages
-- ⚠️ Warnings for low-consistency tasks
-- 📈 Overall consistency summary
-- 💡 Research insight toggle
+Simple rule-based delegation:
+| Task Type | Decision |
+|-----------|----------|
+| 🟢 Low-stakes | ✅ Delegate to AI |
+| 🔴 High-stakes | ❌ Human decision required |
+
+High-stakes criteria:
+| Risk Type | Meaning |
+|-----------|---------|
+| `irreversible` | Cannot be undone (emails, payments) |
+| `legal` | Legal/medical/compliance impact |
+| `security` | Security implications |
+| `company-wide` | Affects entire organization |
+
+#### View 2: SelfCheckGPT (Research-Based)
+
+This view applies the **SelfCheckGPT paper's** core insight:
+
+> *"Larger models often sound more confident, causing people to over-generalize from a few good answers and trust them too much. This leads to over-deployment and more unnoticed mistakes."*
+
+**How SelfCheckGPT detects hallucination:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│   Query: "What should we do with this patient data?"    │
+├─────────────────────────────────────────────────────────┤
+│   Sample 1: "Access via secure portal"                  │
+│   Sample 2: "Retrieve with authorization"               │
+│   Sample 3: "Requires HIPAA compliance review"          │
+│                                                         │
+│   ⚠️ Samples DIVERGE → LOW CONFIDENCE → Human required  │
+└─────────────────────────────────────────────────────────┘
+```
+
+**The algorithm:**
+1. Ask the AI the same question **multiple times** (stochastic sampling)
+2. Compare the answers for **consistency**
+3. **High agreement** → AI probably knows the answer (factual)
+4. **Answers contradict** → AI is likely hallucinating (unreliable)
+
+**What users see:**
+
+| UI Element | Description |
+|------------|-------------|
+| 📊 **Confidence %** | Per-task score (e.g., "78% AI confidence") |
+| 🏷️ **Agreement Level** | HIGH / MEDIUM / LOW badge |
+| ⚠️ **Warning Box** | "High disagreement detected! AI responses inconsistent..." |
+| 📝 **Sample Responses** | Simulated multiple AI outputs showing divergence |
+| 💡 **Recommendation** | DO NOT DELEGATE / HUMAN REVIEW / SAFE TO DELEGATE |
+
+**Confidence calculation (simplified):**
+```typescript
+let confidence = 0.85;  // Base confidence
+if (task.stakes === 'high') confidence -= 0.15;
+if (task.riskTypes?.includes('legal')) confidence -= 0.10;
+if (task.riskTypes?.includes('security')) confidence -= 0.08;
+// Result: Legal high-stakes task → ~52% confidence → "HUMAN REVIEW REQUIRED"
+```
+
+**Why both views matter:**
+
+| View | Strength | Weakness |
+|------|----------|----------|
+| Stakes-Based | Simple, predictable | Ignores AI's actual reliability |
+| SelfCheckGPT | Detects AI uncertainty | More complex |
+
+Together they answer:
+1. **Is this task risky?** (Stakes-Based)
+2. **Can the AI reliably handle it?** (SelfCheckGPT)
+
+**Key takeaway displayed in UI:**
+> *"SelfCheckGPT enforces caution when AI responses disagree — because in high-stakes AI, success depends on calibrated human trust, not smarter-sounding answers."*
 
 ---
 
