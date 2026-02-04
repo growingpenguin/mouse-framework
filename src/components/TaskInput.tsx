@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Info, Loader2, Sparkles, Play, Zap } from 'lucide-react';
+import { ArrowRight, Info, Loader2, Sparkles, Zap, Stethoscope, DollarSign, Server, ChevronRight } from 'lucide-react';
 import { TaskNode, TaskNodeData } from '@/components/TaskNode';
 import { decomposeTaskWithGemini } from '@/lib/gemini';
 
@@ -7,46 +7,72 @@ interface TaskInputProps {
   onNext: (tasks: TaskNodeData[]) => void;
 }
 
-// Demo tasks for the default example - no API key needed!
-const DEMO_TASKS: TaskNodeData[] = [
+// Demo scenarios with different task types
+interface DemoScenario {
+  id: string;
+  title: string;
+  description: string;
+  icon: typeof Stethoscope;
+  color: string;
+  gradient: string;
+  prompt: string;
+  tasks: TaskNodeData[];
+}
+
+const DEMO_SCENARIOS: DemoScenario[] = [
   {
-    id: '1',
-    label: 'Summarize report',
-    stakes: 'low',
-    x: 180,
-    y: 140,
+    id: 'healthcare',
+    title: 'Healthcare',
+    description: 'Patient report & legal notification',
+    icon: Stethoscope,
+    color: 'text-rose-600',
+    gradient: 'from-rose-500 to-pink-500',
+    prompt: 'Handle this patient report and notify the legal team',
+    tasks: [
+      { id: '1', label: 'Summarize report', stakes: 'low', x: 180, y: 140 },
+      { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 420, y: 140 },
+      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 180, y: 340 },
+      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 420, y: 340 },
+    ],
   },
   {
-    id: '2',
-    label: 'Access patient data',
-    stakes: 'high',
-    riskTypes: ['security', 'legal'],
-    x: 420,
-    y: 140,
+    id: 'finance',
+    title: 'Finance',
+    description: 'Payroll processing & bonus approval',
+    icon: DollarSign,
+    color: 'text-emerald-600',
+    gradient: 'from-emerald-500 to-teal-500',
+    prompt: 'Process quarterly payroll and approve employee bonuses',
+    tasks: [
+      { id: '1', label: 'Calculate payroll', stakes: 'low', x: 180, y: 140 },
+      { id: '2', label: 'Review bonus criteria', stakes: 'low', x: 420, y: 140 },
+      { id: '3', label: 'Approve payments', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 180, y: 340 },
+      { id: '4', label: 'Execute bank transfer', stakes: 'high', riskTypes: ['irreversible', 'security'], x: 420, y: 340 },
+    ],
   },
   {
-    id: '3',
-    label: 'Medical interpretation',
-    stakes: 'high',
-    riskTypes: ['legal'],
-    x: 180,
-    y: 340,
-  },
-  {
-    id: '4',
-    label: 'Notify stakeholders',
-    stakes: 'high',
-    riskTypes: ['irreversible', 'company-wide'],
-    x: 420,
-    y: 340,
+    id: 'devops',
+    title: 'IT / DevOps',
+    description: 'Production deployment & security',
+    icon: Server,
+    color: 'text-violet-600',
+    gradient: 'from-violet-500 to-purple-500',
+    prompt: 'Deploy the new release to production and update security settings',
+    tasks: [
+      { id: '1', label: 'Run test suite', stakes: 'low', x: 180, y: 140 },
+      { id: '2', label: 'Build artifacts', stakes: 'low', x: 420, y: 140 },
+      { id: '3', label: 'Deploy to production', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 180, y: 340 },
+      { id: '4', label: 'Update firewall rules', stakes: 'high', riskTypes: ['security', 'irreversible'], x: 420, y: 340 },
+    ],
   },
 ];
 
 export function TaskInput({ onNext }: TaskInputProps) {
-  const [inputText, setInputText] = useState('Handle this patient report and notify the legal team');
+  const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [previewTasks, setPreviewTasks] = useState<TaskNodeData[]>(DEMO_TASKS);
+  const [previewTasks, setPreviewTasks] = useState<TaskNodeData[]>([]);
   const [hasDecomposed, setHasDecomposed] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
   const handleDecompose = async () => {
     if (!inputText.trim()) return;
@@ -56,6 +82,7 @@ export function TaskInput({ onNext }: TaskInputProps) {
       const tasks = await decomposeTaskWithGemini(inputText);
       setPreviewTasks(tasks);
       setHasDecomposed(true);
+      setSelectedScenario(null);
     } catch (error) {
       console.error('Failed to decompose task:', error);
     } finally {
@@ -63,11 +90,11 @@ export function TaskInput({ onNext }: TaskInputProps) {
     }
   };
 
-  // Quick demo - skip API call and use pre-made tasks
-  const handleTryDemo = () => {
-    setInputText('Handle this patient report and notify the legal team');
-    setPreviewTasks(DEMO_TASKS);
+  const handleSelectDemo = (scenario: DemoScenario) => {
+    setInputText(scenario.prompt);
+    setPreviewTasks(scenario.tasks);
     setHasDecomposed(true);
+    setSelectedScenario(scenario.id);
   };
 
   const handleContinue = () => {
@@ -149,37 +176,82 @@ export function TaskInput({ onNext }: TaskInputProps) {
           </p>
         </div>
 
-        {/* Input Section */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-8 mb-8">
+        {/* Demo Scenario Cards */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+            <span className="text-sm font-semibold text-slate-700">Try a Demo Scenario (No API Key Required)</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {DEMO_SCENARIOS.map((scenario) => {
+              const Icon = scenario.icon;
+              const isSelected = selectedScenario === scenario.id;
+              return (
+                <button
+                  key={scenario.id}
+                  onClick={() => handleSelectDemo(scenario)}
+                  className={`
+                    relative p-5 rounded-2xl text-left transition-all duration-300 group
+                    ${isSelected 
+                      ? `bg-gradient-to-br ${scenario.gradient} text-white shadow-xl scale-[1.02]` 
+                      : 'bg-white/70 hover:bg-white border border-slate-200/50 hover:border-slate-300 hover:shadow-lg'
+                    }
+                  `}
+                >
+                  <div className={`
+                    w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors
+                    ${isSelected 
+                      ? 'bg-white/20' 
+                      : `bg-gradient-to-br ${scenario.gradient} bg-opacity-10`
+                    }
+                  `}>
+                    <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : scenario.color}`} />
+                  </div>
+                  <h3 className={`font-bold text-lg mb-1 ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                    {scenario.title}
+                  </h3>
+                  <p className={`text-sm ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
+                    {scenario.description}
+                  </p>
+                  <div className={`
+                    absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-300
+                    ${isSelected ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-50 group-hover:translate-x-0'}
+                  `}>
+                    <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Custom Input Section */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+            <span className="text-sm font-semibold text-slate-700">Or Enter Your Own Request</span>
+          </div>
           <textarea
-            className="w-full h-32 px-5 py-4 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800 text-lg bg-white/80"
-            placeholder="Example: Handle this patient report and notify the legal team"
+            className="w-full h-28 px-5 py-4 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800 text-base bg-white/80"
+            placeholder="Example: Review customer complaints and escalate critical issues to management"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={(e) => {
+              setInputText(e.target.value);
+              if (selectedScenario) setSelectedScenario(null);
+            }}
           />
           
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            {/* Demo button - no API key needed! */}
-            {!hasDecomposed && (
-              <button
-                onClick={handleTryDemo}
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30"
-              >
-                <Play className="w-5 h-5" />
-                Try Demo (No API Key)
-              </button>
-            )}
-            
+          <div className="mt-4 flex flex-wrap justify-end gap-3">
             {/* AI decompose button */}
             <button
               onClick={handleDecompose}
               disabled={isLoading || !inputText.trim()}
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 disabled:shadow-none"
+              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 disabled:shadow-none"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing with AI...
+                  Analyzing...
                 </>
               ) : (
                 <>
@@ -189,11 +261,11 @@ export function TaskInput({ onNext }: TaskInputProps) {
               )}
             </button>
             
-            {/* Continue button - shows after decomposition */}
+            {/* Continue button */}
             {hasDecomposed && (
               <button
                 onClick={handleContinue}
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30"
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30"
               >
                 Continue
                 <ArrowRight className="w-5 h-5" />
@@ -202,68 +274,81 @@ export function TaskInput({ onNext }: TaskInputProps) {
           </div>
         </div>
 
-        {/* Decomposed Framework */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-8 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                Task Framework
-              </h2>
-              <p className="text-sm text-slate-500">AI-decomposed workflow visualization</p>
-            </div>
-          </div>
-
-          {/* Canvas for nodes and connections */}
-          <div className="relative h-[480px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
-                backgroundSize: '40px 40px',
-              }} />
-            </div>
-            
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              <defs>
-                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-              </defs>
-              {generateConnections()}
-            </svg>
-
-            {/* Task Nodes */}
-            {previewTasks.map((task) => (
-              <div
-                key={task.id}
-                className="absolute transition-all duration-500 ease-out"
-                style={{
-                  left: `${task.x}px`,
-                  top: `${task.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                <TaskNode node={task} showRiskIcons />
+        {/* Task Framework Preview */}
+        {hasDecomposed && previewTasks.length > 0 && (
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-8 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
-            ))}
-          </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Task Framework
+                </h2>
+                <p className="text-sm text-slate-500">AI-decomposed workflow • {previewTasks.length} tasks identified</p>
+              </div>
+            </div>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-8 pt-6 mt-6 border-t border-slate-200/50">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm" />
-              <span className="text-sm text-slate-600">Low-stakes (reversible, informational)</span>
+            {/* Canvas */}
+            <div className="relative h-[480px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute inset-0" style={{
+                  backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
+                  backgroundSize: '40px 40px',
+                }} />
+              </div>
+              
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                <defs>
+                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#6366f1" />
+                  </linearGradient>
+                </defs>
+                {generateConnections()}
+              </svg>
+
+              {previewTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="absolute transition-all duration-500 ease-out"
+                  style={{
+                    left: `${task.x}px`,
+                    top: `${task.y}px`,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                >
+                  <TaskNode node={task} showRiskIcons />
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-sm" />
-              <span className="text-sm text-slate-600">High-stakes (irreversible, sensitive)</span>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-8 pt-6 mt-6 border-t border-slate-200/50">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm" />
+                <span className="text-sm text-slate-600">Low-stakes (safe to delegate)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-sm" />
+                <span className="text-sm text-slate-600">High-stakes (human required)</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Empty State */}
+        {!hasDecomposed && (
+          <div className="bg-white/50 backdrop-blur-sm rounded-2xl border-2 border-dashed border-slate-300 p-12 text-center mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-700 mb-2">Select a Demo or Enter Your Request</h3>
+            <p className="text-slate-500 max-w-md mx-auto">
+              Choose one of the demo scenarios above or type your own request to see how AI decomposes complex tasks.
+            </p>
+          </div>
+        )}
 
         {/* Important Note */}
         <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-2xl p-5 flex items-start gap-4 shadow-lg">
