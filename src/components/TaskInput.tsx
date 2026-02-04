@@ -29,10 +29,10 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     gradient: 'from-rose-500 to-pink-500',
     prompt: 'Handle this patient report and notify the legal team',
     tasks: [
-      { id: '1', label: 'Summarize report', stakes: 'low', x: 180, y: 140 },
-      { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 420, y: 140 },
-      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 180, y: 340 },
-      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 420, y: 340 },
+      { id: '1', label: 'Summarize report', stakes: 'low', x: 150, y: 120 },
+      { id: '2', label: 'Access patient data', stakes: 'high', riskTypes: ['security', 'legal'], x: 450, y: 120 },
+      { id: '3', label: 'Medical interpretation', stakes: 'high', riskTypes: ['legal'], x: 150, y: 380 },
+      { id: '4', label: 'Notify stakeholders', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 450, y: 380 },
     ],
   },
   {
@@ -44,10 +44,10 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     gradient: 'from-emerald-500 to-teal-500',
     prompt: 'Process quarterly payroll and approve employee bonuses',
     tasks: [
-      { id: '1', label: 'Calculate payroll', stakes: 'low', x: 180, y: 140 },
-      { id: '2', label: 'Review bonus criteria', stakes: 'low', x: 420, y: 140 },
-      { id: '3', label: 'Approve payments', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 180, y: 340 },
-      { id: '4', label: 'Execute bank transfer', stakes: 'high', riskTypes: ['irreversible', 'security'], x: 420, y: 340 },
+      { id: '1', label: 'Calculate payroll', stakes: 'low', x: 150, y: 120 },
+      { id: '2', label: 'Review bonus criteria', stakes: 'low', x: 450, y: 120 },
+      { id: '3', label: 'Approve payments', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 150, y: 380 },
+      { id: '4', label: 'Execute bank transfer', stakes: 'high', riskTypes: ['irreversible', 'security'], x: 450, y: 380 },
     ],
   },
   {
@@ -59,10 +59,10 @@ const DEMO_SCENARIOS: DemoScenario[] = [
     gradient: 'from-violet-500 to-purple-500',
     prompt: 'Deploy the new release to production and update security settings',
     tasks: [
-      { id: '1', label: 'Run test suite', stakes: 'low', x: 180, y: 140 },
-      { id: '2', label: 'Build artifacts', stakes: 'low', x: 420, y: 140 },
-      { id: '3', label: 'Deploy to production', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 180, y: 340 },
-      { id: '4', label: 'Update firewall rules', stakes: 'high', riskTypes: ['security', 'irreversible'], x: 420, y: 340 },
+      { id: '1', label: 'Run test suite', stakes: 'low', x: 150, y: 120 },
+      { id: '2', label: 'Build artifacts', stakes: 'low', x: 450, y: 120 },
+      { id: '3', label: 'Deploy to production', stakes: 'high', riskTypes: ['irreversible', 'company-wide'], x: 150, y: 380 },
+      { id: '4', label: 'Update firewall rules', stakes: 'high', riskTypes: ['security', 'irreversible'], x: 450, y: 380 },
     ],
   },
 ];
@@ -107,6 +107,8 @@ export function TaskInput({ onNext }: TaskInputProps) {
     
     if (previewTasks.length < 2) return connections;
     
+    // Define connection pairs based on task count
+    // For 4 tasks in 2x2 grid: connect top row to bottom row
     const connectionPairs: [number, number][] = [];
     
     if (previewTasks.length === 2) {
@@ -114,6 +116,7 @@ export function TaskInput({ onNext }: TaskInputProps) {
     } else if (previewTasks.length === 3) {
       connectionPairs.push([0, 2], [1, 2]);
     } else if (previewTasks.length >= 4) {
+      // Top-left → Bottom-left, Top-right → Bottom-right, Bottom-left → Bottom-right
       connectionPairs.push([0, 2], [1, 3], [2, 3]);
     }
     
@@ -126,9 +129,9 @@ export function TaskInput({ onNext }: TaskInputProps) {
       if (!from.x || !from.y || !to.x || !to.y) return;
       
       const startX = from.x;
-      const startY = from.y + 50;
+      const startY = from.y + 70; // Increased offset for larger nodes
       const endX = to.x;
-      const endY = to.y - 50;
+      const endY = to.y - 70;
       
       const midY = (startY + endY) / 2;
       const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
@@ -139,16 +142,17 @@ export function TaskInput({ onNext }: TaskInputProps) {
           d={path}
           fill="none"
           stroke="url(#connectionGradient)"
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
-          className="opacity-60"
+          className="opacity-70"
         />
       );
       
+      // Animated dot traveling along the path
       connections.push(
         <circle key={`dot-${i}`} r="4" fill="#6366f1">
           <animateMotion
-            dur={`${3 + i * 0.5}s`}
+            dur={`${2.5 + i * 0.3}s`}
             repeatCount="indefinite"
             path={path}
           />
@@ -290,7 +294,7 @@ export function TaskInput({ onNext }: TaskInputProps) {
             </div>
 
             {/* Canvas */}
-            <div className="relative h-[480px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
+            <div className="relative h-[520px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
               <div className="absolute inset-0 opacity-30">
                 <div className="absolute inset-0" style={{
                   backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,

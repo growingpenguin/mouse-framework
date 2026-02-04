@@ -11,11 +11,11 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
   const [tasks, setTasks] = useState<TaskNodeData[]>(() => {
     // Position tasks in a nice grid layout
     const positions = [
-      { x: 180, y: 140 },
-      { x: 420, y: 140 },
-      { x: 180, y: 340 },
-      { x: 420, y: 340 },
-      { x: 300, y: 480 },
+      { x: 150, y: 120 },
+      { x: 450, y: 120 },
+      { x: 150, y: 380 },
+      { x: 450, y: 380 },
+      { x: 300, y: 500 },
     ];
     return initialTasks.map((task, i) => ({
       ...task,
@@ -44,11 +44,11 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
     if (!newTaskLabel.trim()) return;
     
     const positions = [
-      { x: 180, y: 140 },
-      { x: 420, y: 140 },
-      { x: 180, y: 340 },
-      { x: 420, y: 340 },
-      { x: 300, y: 480 },
+      { x: 150, y: 120 },
+      { x: 450, y: 120 },
+      { x: 150, y: 380 },
+      { x: 450, y: 380 },
+      { x: 300, y: 500 },
     ];
     
     const newTask: TaskNodeData = {
@@ -110,11 +110,11 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
     [newTasks[index], newTasks[newIndex]] = [newTasks[newIndex], newTasks[index]];
     
     const positions = [
-      { x: 180, y: 140 },
-      { x: 420, y: 140 },
-      { x: 180, y: 340 },
-      { x: 420, y: 340 },
-      { x: 300, y: 480 },
+      { x: 150, y: 120 },
+      { x: 450, y: 120 },
+      { x: 150, y: 380 },
+      { x: 450, y: 380 },
+      { x: 300, y: 500 },
     ];
     
     newTasks.forEach((task, i) => {
@@ -156,9 +156,9 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
       if (!from.x || !from.y || !to.x || !to.y) return;
       
       const startX = from.x;
-      const startY = from.y + 50;
+      const startY = from.y + 70;
       const endX = to.x;
-      const endY = to.y - 50;
+      const endY = to.y - 70;
       
       // Create curved path
       const midY = (startY + endY) / 2;
