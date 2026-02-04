@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, Info, Loader2, Sparkles, Zap, Stethoscope, DollarSign, Server, ChevronRight } from 'lucide-react';
-import { TaskNode, TaskNodeData } from '@/components/TaskNode';
+import { TaskNodeData } from '@/components/TaskNode';
+import { TaskCanvas } from '@/components/TaskCanvas';
 import { decomposeTaskWithGemini } from '@/lib/gemini';
 
 interface TaskInputProps {
@@ -111,68 +112,6 @@ export function TaskInput({ onNext }: TaskInputProps) {
 
   const handleContinue = () => {
     onNext(previewTasks);
-  };
-
-  // Generate curved connection paths
-  const generateConnections = () => {
-    const connections: JSX.Element[] = [];
-    
-    if (previewTasks.length < 2) return connections;
-    
-    // Define connection pairs based on task count
-    // For 4 tasks in 2x2 grid: connect top row to bottom row
-    const connectionPairs: [number, number][] = [];
-    
-    if (previewTasks.length === 2) {
-      connectionPairs.push([0, 1]);
-    } else if (previewTasks.length === 3) {
-      connectionPairs.push([0, 2], [1, 2]);
-    } else if (previewTasks.length >= 4) {
-      // Top-left → Bottom-left, Top-right → Bottom-right, Bottom-left → Bottom-right
-      connectionPairs.push([0, 2], [1, 3], [2, 3]);
-    }
-    
-    connectionPairs.forEach(([fromIdx, toIdx], i) => {
-      if (fromIdx >= previewTasks.length || toIdx >= previewTasks.length) return;
-      
-      const from = previewTasks[fromIdx];
-      const to = previewTasks[toIdx];
-      
-      if (!from.x || !from.y || !to.x || !to.y) return;
-      
-      const startX = from.x;
-      const startY = from.y + 70; // Increased offset for larger nodes
-      const endX = to.x;
-      const endY = to.y - 70;
-      
-      const midY = (startY + endY) / 2;
-      const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
-      
-      connections.push(
-        <path
-          key={`connection-${i}`}
-          d={path}
-          fill="none"
-          stroke="url(#connectionGradient)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          className="opacity-70"
-        />
-      );
-      
-      // Animated dot traveling along the path
-      connections.push(
-        <circle key={`dot-${i}`} r="4" fill="#6366f1">
-          <animateMotion
-            dur={`${2.5 + i * 0.3}s`}
-            repeatCount="indefinite"
-            path={path}
-          />
-        </circle>
-      );
-    });
-    
-    return connections;
   };
 
   return (
@@ -305,39 +244,8 @@ export function TaskInput({ onNext }: TaskInputProps) {
               </div>
             </div>
 
-            {/* Canvas */}
-            <div className="relative h-[520px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
-              <div className="absolute inset-0 opacity-30">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
-                  backgroundSize: '40px 40px',
-                }} />
-              </div>
-              
-              <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                <defs>
-                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#6366f1" />
-                  </linearGradient>
-                </defs>
-                {generateConnections()}
-              </svg>
-
-              {previewTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="absolute transition-all duration-500 ease-out"
-                  style={{
-                    left: `${task.x}px`,
-                    top: `${task.y}px`,
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                >
-                  <TaskNode node={task} showRiskIcons />
-                </div>
-              ))}
-            </div>
+            {/* Canvas with Force-Directed Layout */}
+            <TaskCanvas tasks={previewTasks} height={520} />
 
             {/* Legend */}
             <div className="flex items-center justify-center gap-8 pt-6 mt-6 border-t border-slate-200/50">

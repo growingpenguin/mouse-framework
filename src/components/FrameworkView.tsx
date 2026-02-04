@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Edit3, Trash2, ArrowRight, Plus, ArrowUp, ArrowDown, Shield, X, Check, Sparkles } from 'lucide-react';
-import { TaskNode, TaskNodeData, StakeLevel } from '@/components/TaskNode';
+import { TaskNodeData, StakeLevel } from '@/components/TaskNode';
+import { TaskCanvas } from '@/components/TaskCanvas';
 
 interface FrameworkViewProps {
   initialTasks: TaskNodeData[];
@@ -127,75 +128,6 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
 
   const selectedTaskData = tasks.find(t => t.id === selectedTask);
 
-  // Generate curved connection paths
-  const generateConnections = () => {
-    const connections: JSX.Element[] = [];
-    
-    if (tasks.length < 2) return connections;
-    
-    // Connect tasks in a logical flow
-    const connectionPairs: [number, number][] = [];
-    
-    if (tasks.length === 2) {
-      connectionPairs.push([0, 1]);
-    } else if (tasks.length === 3) {
-      connectionPairs.push([0, 2], [1, 2]);
-    } else if (tasks.length >= 4) {
-      connectionPairs.push([0, 2], [1, 3], [2, 3]);
-      if (tasks.length >= 5) {
-        connectionPairs.push([3, 4]);
-      }
-    }
-    
-    connectionPairs.forEach(([fromIdx, toIdx], i) => {
-      if (fromIdx >= tasks.length || toIdx >= tasks.length) return;
-      
-      const from = tasks[fromIdx];
-      const to = tasks[toIdx];
-      
-      if (!from.x || !from.y || !to.x || !to.y) return;
-      
-      const startX = from.x;
-      const startY = from.y + 70;
-      const endX = to.x;
-      const endY = to.y - 70;
-      
-      // Create curved path
-      const midY = (startY + endY) / 2;
-      const controlX1 = startX;
-      const controlY1 = midY;
-      const controlX2 = endX;
-      const controlY2 = midY;
-      
-      const path = `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
-      
-      connections.push(
-        <path
-          key={`connection-${i}`}
-          d={path}
-          fill="none"
-          stroke="url(#connectionGradient)"
-          strokeWidth="2"
-          strokeLinecap="round"
-          className="opacity-60"
-        />
-      );
-      
-      // Add animated dot
-      connections.push(
-        <circle key={`dot-${i}`} r="4" fill="#6366f1">
-          <animateMotion
-            dur={`${3 + i * 0.5}s`}
-            repeatCount="indefinite"
-            path={path}
-          />
-        </circle>
-      );
-    });
-    
-    return connections;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-8">
       <div className="max-w-5xl w-full">
@@ -215,59 +147,13 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
 
         {/* Main Framework Canvas */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 p-6 mb-6">
-          <div className="relative h-[550px] bg-gradient-to-br from-slate-100/50 via-white to-blue-50/30 rounded-xl overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
-                backgroundSize: '40px 40px',
-              }} />
-            </div>
-            
-            {/* Connection Lines */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-              <defs>
-                <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#6366f1" />
-                </linearGradient>
-              </defs>
-              {generateConnections()}
-            </svg>
-
-            {/* Task Nodes */}
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="absolute transition-all duration-500 ease-out"
-                style={{
-                  left: `${task.x}px`,
-                  top: `${task.y}px`,
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                <TaskNode
-                  node={task}
-                  onClick={() => handleTaskClick(task.id)}
-                  isSelected={selectedTask === task.id}
-                  showRiskIcons
-                />
-              </div>
-            ))}
-
-            {/* Empty State */}
-            {tasks.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-                    <Plus className="w-8 h-8 text-slate-400" />
-                  </div>
-                  <p className="text-slate-500 font-medium">No tasks yet</p>
-                  <p className="text-slate-400 text-sm">Add a task to get started</p>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Force-Directed Layout Canvas */}
+          <TaskCanvas 
+            tasks={tasks} 
+            selectedTaskId={selectedTask}
+            onTaskClick={handleTaskClick}
+            height={550}
+          />
 
           {/* Edit Panel */}
           {selectedTask && selectedTaskData && (
