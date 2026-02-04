@@ -34,49 +34,42 @@ export function TaskCanvas({
     return () => window.removeEventListener('resize', updateDimensions);
   }, [height]);
 
-  // Use force-directed layout
-  const positionedNodes = useForceLayout(tasks, {
+  // Use force-directed layout - now returns nodes AND connections
+  const { nodes: positionedNodes, connections } = useForceLayout(tasks, {
     width: dimensions.width,
     height: dimensions.height,
     nodeRadius: 55,
-    padding: 25,
+    padding: 30,
   });
 
-  // Generate curved connection paths
+  // Generate curved connection paths based on actual connections
   const generateConnections = () => {
-    const connections: JSX.Element[] = [];
+    const elements: JSX.Element[] = [];
     
-    if (positionedNodes.length < 2) return connections;
+    if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
-    // Define connection pairs based on task count
-    const connectionPairs: [number, number][] = [];
-    
-    if (positionedNodes.length === 2) {
-      connectionPairs.push([0, 1]);
-    } else if (positionedNodes.length === 3) {
-      connectionPairs.push([0, 2], [1, 2]);
-    } else if (positionedNodes.length >= 4) {
-      connectionPairs.push([0, 2], [1, 3], [2, 3]);
-    }
-    
-    connectionPairs.forEach(([fromIdx, toIdx], i) => {
+    connections.forEach(([fromIdx, toIdx], i) => {
       if (fromIdx >= positionedNodes.length || toIdx >= positionedNodes.length) return;
       
       const from = positionedNodes[fromIdx];
       const to = positionedNodes[toIdx];
       
-      if (!from.x || !from.y || !to.x || !to.y) return;
+      if (!from?.x || !from?.y || !to?.x || !to?.y) return;
       
       const startX = from.x;
-      const startY = from.y + 60;
+      const startY = from.y + 55; // Below the node
       const endX = to.x;
-      const endY = to.y - 60;
+      const endY = to.y - 55; // Above the target node
       
       // Create curved bezier path
       const midY = (startY + endY) / 2;
-      const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
       
-      connections.push(
+      // Add some horizontal curve for better visuals
+      const curveOffset = (endX - startX) * 0.1;
+      const path = `M ${startX} ${startY} C ${startX + curveOffset} ${midY}, ${endX - curveOffset} ${midY}, ${endX} ${endY}`;
+      
+      // Connection line
+      elements.push(
         <path
           key={`connection-${i}`}
           d={path}
@@ -89,10 +82,10 @@ export function TaskCanvas({
       );
       
       // Animated dot traveling along the path
-      connections.push(
+      elements.push(
         <circle key={`dot-${i}`} r="4" fill="#6366f1" className="opacity-80">
           <animateMotion
-            dur={`${2.5 + i * 0.3}s`}
+            dur={`${2 + (i % 3) * 0.5}s`}
             repeatCount="indefinite"
             path={path}
           />
@@ -100,7 +93,7 @@ export function TaskCanvas({
       );
     });
     
-    return connections;
+    return elements;
   };
 
   return (
@@ -127,6 +120,17 @@ export function TaskCanvas({
             <stop offset="0%" stopColor="#10b981" />
             <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
+          {/* Arrow marker for future use */}
+          <marker
+            id="arrowhead"
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
+          </marker>
         </defs>
         {generateConnections()}
       </svg>
@@ -135,7 +139,7 @@ export function TaskCanvas({
       {positionedNodes.map((task) => (
         <div
           key={task.id}
-          className="absolute transition-all duration-500 ease-out"
+          className="absolute transition-all duration-300 ease-out"
           style={{
             left: `${task.x}px`,
             top: `${task.y}px`,
@@ -163,6 +167,13 @@ export function TaskCanvas({
             <p className="text-slate-500 font-medium">No tasks yet</p>
             <p className="text-slate-400 text-sm">Select a demo or enter your request</p>
           </div>
+        </div>
+      )}
+
+      {/* Node count indicator */}
+      {tasks.length > 0 && (
+        <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-xs font-medium text-slate-600 shadow-sm">
+          {tasks.length} task{tasks.length !== 1 ? 's' : ''} • {connections.length} connection{connections.length !== 1 ? 's' : ''}
         </div>
       )}
     </div>
