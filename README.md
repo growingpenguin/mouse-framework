@@ -202,15 +202,107 @@ This view applies the **SelfCheckGPT paper's** core insight:
 3. **High agreement** → AI probably knows the answer (factual)
 4. **Answers contradict** → AI is likely hallucinating (unreliable)
 
-**What users see:**
+---
 
-| UI Element | Description |
-|------------|-------------|
-| 📊 **Confidence %** | Per-task score (e.g., "78% AI confidence") |
-| 🏷️ **Agreement Level** | HIGH / MEDIUM / LOW badge |
-| ⚠️ **Warning Box** | "High disagreement detected! AI responses inconsistent..." |
-| 📝 **Sample Responses** | Simulated multiple AI outputs showing divergence |
-| 💡 **Recommendation** | DO NOT DELEGATE / HUMAN REVIEW / SAFE TO DELEGATE |
+##### SelfCheckGPT Page Layout
+
+The SelfCheckGPT view has **4 main sections**:
+
+**Section 1: Header with Research Toggle**
+```
+┌──────────────────────────────────────────────────────────┐
+│  🧠 SelfCheckGPT Analysis                                │
+│                                                          │
+│  Detecting AI uncertainty by comparing multiple          │
+│  response samples. High disagreement = hallucination.    │
+│                                                          │
+│  [Show research insight ▼]  ← Click to see paper details │
+└──────────────────────────────────────────────────────────┘
+```
+
+When expanded, shows the core research principle:
+- **Problem:** Larger models sound confident → over-trust
+- **Solution:** SelfCheckGPT detects inconsistency
+- **Key Insight:** Success = calibrated trust, not smart answers
+
+---
+
+**Section 2: Consistency Summary (3-column dashboard)**
+
+| Metric | What It Shows | Example |
+|--------|---------------|---------|
+| **Overall Confidence** | Average across all tasks | 74% |
+| **High Agreement** | # of tasks where AI is consistent | 2 |
+| **Low Agreement** | # of tasks where AI contradicts itself | 0 |
+
+This gives you a **bird's-eye view** before diving into individual tasks.
+
+---
+
+**Section 3: Recommendation Box (color-coded)**
+
+| Status | Color | Message |
+|--------|-------|---------|
+| **LOW RISK** | 🟢 Green | "All tasks show high consistency. Safe for delegation." |
+| **MIXED** | 🟡 Yellow | "Some tasks reliable, others uncertain. Review individually." |
+| **CRITICAL** | 🔴 Red | "Most tasks show high uncertainty. Avoid delegation." |
+
+Below the status, a **trust calibration message** appears:
+> *"Success depends on calibrated trust, not smarter-sounding answers. Check each task."*
+
+---
+
+**Section 4: Per-Task Consistency Analysis (expandable cards)**
+
+Each task gets a card showing:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  ✓ Calculate payroll                           89%      │
+│    🟢 Low-stakes                          HIGH agreement │
+│                                                    [▼]   │
+└──────────────────────────────────────────────────────────┘
+```
+
+Click to expand and see:
+- **Sample Responses** — Simulated AI outputs (3 samples)
+- **Warning** — If disagreement detected
+- **Recommendation** — What action to take
+
+Example expanded card:
+```
+┌──────────────────────────────────────────────────────────┐
+│  ⚠️ Medical interpretation                     52%      │
+│    🔴 High-stakes                           LOW agreement │
+├──────────────────────────────────────────────────────────┤
+│  Sample responses (simulated):                           │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ Sample 1: "Requires legal review per Section 5.2" │  │
+│  │ Sample 2: "May need compliance under Article 7"   │  │
+│  │ Sample 3: "Legal implications unclear, consult"   │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ⚠️ WARNING: High disagreement detected! AI responses    │
+│     are inconsistent. Do NOT delegate without review.    │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ 🔴 DO NOT DELEGATE: High uncertainty detected.    │  │
+│  └────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+##### Why Each Section Matters
+
+| Section | Purpose | User Need |
+|---------|---------|-----------|
+| **Header** | Explain what SelfCheckGPT does | Understanding |
+| **Consistency Summary** | Quick overview of all tasks | Speed |
+| **Recommendation Box** | Overall action to take | Decision |
+| **Per-Task Analysis** | Deep dive into each task | Precision |
+
+---
 
 **Confidence calculation (simplified):**
 ```typescript
