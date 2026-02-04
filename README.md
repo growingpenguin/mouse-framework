@@ -332,15 +332,99 @@ Together they answer:
 ### Screen 4: Reversibility & Checkpoints
 **"Control & safety"**
 
-Interactive controls:
-- **Undo** - Click to undo last action
-- **Rollback** - View history, restore any state
-- **Preview** - See pending changes before commit
+This screen teaches one key principle: **"You can always go back. You're never locked in."**
 
-Mandatory checkpoints:
-- 📤 Sending data → Approve
-- 💳 Making payments → Approve
-- 🔐 Security changes → Approve
+---
+
+#### Part 1: Reversibility Controls (The "Oops" Buttons)
+
+| Control | What It Does | Analogy |
+|---------|--------------|---------|
+| ⏪ **Undo** | Takes back the last action | Like Ctrl+Z |
+| ⏮️ **Rollback** | Shows full history, restore any point | Like browser history |
+| 👁️ **Preview** | See exactly what will happen before it happens | Like print preview |
+
+**Example Action History:**
+```
+┌──────────────────────────────────────────────────────────┐
+│  Action History                                          │
+├──────────────────────────────────────────────────────────┤
+│  1. AI drafted email              [Rollback here]        │
+│  2. Added recipient               [Rollback here]        │
+│  3. Attached file (most recent)   [Rollback here]        │
+└──────────────────────────────────────────────────────────┘
+```
+
+Click "Rollback here" on step 1 → Steps 2 and 3 are undone.
+
+**Example Preview Panel:**
+```
+┌──────────────────────────────────────────────────────────┐
+│  👁️ Preview: Pending Email                              │
+├──────────────────────────────────────────────────────────┤
+│  To: legal@company.com                                   │
+│  Subject: Patient Report Summary                         │
+│  Attachment: patient_report.pdf                          │
+│                                                          │
+│  Body: Dear Legal Team...                                │
+│                                                          │
+│            [Close Preview]  [Approve & Send]             │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+#### Part 2: Mandatory Checkpoints (The "Are You Sure?" Gates)
+
+Some actions are **too dangerous** to do automatically. These are "gates" that require manual human approval:
+
+| Checkpoint | Icon | Why It Exists | Example Danger |
+|------------|------|---------------|----------------|
+| **Sending data** | 📤 | Can't un-send an email | Wrong recipient sees confidential info |
+| **Making payments** | 💳 | Money is hard to get back | Payment to wrong account |
+| **Security changes** | 🔐 | Access control is critical | Accidentally giving admin access |
+
+**How Checkpoints Work:**
+
+```
+Before approval (blocked):
+┌──────────────────────────────────────────────────────────┐
+│  📤 Sending data                                         │
+│  "Review recipients and content before sending"          │
+│  ⚠️ Requires approval                [Click to Approve]  │
+└──────────────────────────────────────────────────────────┘
+
+After approval (unlocked):
+┌──────────────────────────────────────────────────────────┐
+│  📤 Sending data                                         │
+│  "Review recipients and content before sending"          │
+│  ✅ Approved                              [Approved ✓]   │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Progress Bar:**
+```
+Checkpoint Progress: 2/3 approved
+[████████████░░░░░░] 66%
+```
+
+All 3 checkpoints must be approved before high-stakes actions can proceed.
+
+---
+
+#### Why This Matters
+
+| Without Reversibility | With Reversibility |
+|-----------------------|-------------------|
+| AI sends email → Wrong person! | AI drafts → You preview → You approve |
+| Made a mistake? Too late | Made a mistake? Click Undo |
+| "What just happened?" | Full history visible |
+| Dangerous actions happen silently | Gates stop you to confirm |
+
+**Core Message:**
+> **"Delegation never removes your control"**
+> 
+> Even when AI does the work, YOU approve dangerous actions, YOU can undo anything, and YOU see everything before it happens.
 
 ---
 
