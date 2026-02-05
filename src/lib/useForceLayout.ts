@@ -59,14 +59,15 @@ function calculateGridPosition(index: number, totalNodes: number, width: number,
   }
   
   if (totalNodes === 4) {
-    // Snake flow: 1 → 2
-    //             ↓
-    //         4 ← 3
+    // Z-pattern flow: 0 → 1
+    //                 ↓
+    //                 2 → 3
+    // This matches demo task layouts where bottom tasks go left-to-right
     const positions = [
-      { x: width * 0.25, y: height * 0.25 },  // 1: top-left
-      { x: width * 0.75, y: height * 0.25 },  // 2: top-right
-      { x: width * 0.75, y: height * 0.7 },   // 3: bottom-right
-      { x: width * 0.25, y: height * 0.7 },   // 4: bottom-left
+      { x: width * 0.25, y: height * 0.22 },  // 0: top-left
+      { x: width * 0.75, y: height * 0.22 },  // 1: top-right
+      { x: width * 0.25, y: height * 0.65 },  // 2: bottom-left
+      { x: width * 0.75, y: height * 0.65 },  // 3: bottom-right
     ];
     return positions[index];
   }
@@ -146,6 +147,22 @@ export function useForceLayout(
     // Generate connection pairs
     const connectionPairs = generateConnections(tasks.length);
     setConnections(connectionPairs);
+
+    // DEBUG: Skip force simulation, use fixed grid positions
+    const USE_FIXED_POSITIONS = true;
+    if (USE_FIXED_POSITIONS) {
+      setNodes(
+        initialNodes.map((node) => ({
+          id: node.id,
+          label: node.label,
+          stakes: node.stakes,
+          riskTypes: node.riskTypes as TaskNodeData['riskTypes'],
+          x: node.x,
+          y: node.y,
+        }))
+      );
+      return; // Skip force simulation
+    }
 
     // Create links for force simulation
     const links: ForceLink[] = connectionPairs.map(([source, target]) => ({

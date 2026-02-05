@@ -40,11 +40,12 @@ export function TaskNode({ node, onClick, isSelected, showRiskIcons }: TaskNodeP
     <div
       onClick={onClick}
       className={`
-        cursor-pointer transition-all duration-300 ease-out flex flex-col items-center
+        cursor-pointer transition-all duration-300 ease-out
         ${isSelected ? 'scale-110 z-10' : 'hover:scale-105'}
       `}
+      style={{ width: 96 }} // Fixed width = circle width, so circle is at left edge
     >
-      {/* Main Node Circle - fixed width container ensures circle is centered */}
+      {/* Main Node Circle - exactly 96x96, positioned at container's top-left */}
       <div className="relative w-24 h-24 flex-shrink-0">
         {/* Glow Effect */}
         <div
@@ -96,8 +97,8 @@ export function TaskNode({ node, onClick, isSelected, showRiskIcons }: TaskNodeP
         </div>
       </div>
 
-      {/* Label */}
-      <div className="mt-4 text-center max-w-[160px]">
+      {/* Label - centered, can overflow the 96px container */}
+      <div className="mt-4 text-center" style={{ width: 160, marginLeft: -32 }}>
         <div className={`
           text-sm font-semibold leading-tight mb-1 transition-colors
           ${isSelected ? 'text-slate-900' : 'text-slate-700'}
@@ -118,9 +119,9 @@ export function TaskNode({ node, onClick, isSelected, showRiskIcons }: TaskNodeP
         </div>
       </div>
 
-      {/* Risk Icons */}
+      {/* Risk Icons - centered, can overflow */}
       {showRiskIcons && node.riskTypes && node.riskTypes.length > 0 && (
-        <div className="flex gap-1.5 justify-center mt-3">
+        <div className="flex gap-1.5 justify-center mt-3" style={{ width: 160, marginLeft: -32 }}>
           {node.riskTypes.slice(0, 3).map((riskType) => {
             const Icon = riskIcons[riskType];
             return (
