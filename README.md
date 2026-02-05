@@ -529,92 +529,248 @@ forceSimulation(nodes)
 
 ## 🎯 Arrow Routing Algorithm
 
-Connections between task nodes use **boundary-to-boundary edge routing** with the **Ray–circle intersection** algorithm:
+Connections between task nodes use **boundary-to-boundary edge routing** with the **Ray–circle intersection** algorithm.
+
+> **File:** `src/components/TaskCanvas.tsx`
+
+---
 
 ### The Problem
+
 Simply drawing a line from center to center looks wrong:
-- Arrow starts inside the source node
-- Arrow ends inside the target node
-- Arrowhead hidden inside the circle
+
+```
+     ❌ CENTER-TO-CENTER (wrong)
+     ┌───────────────────────────────────────────────────────┐
+     │      ╭───╮                            ╭───╮           │
+     │      │ A │━━━━━━━━━━━━━━━━━━━━━━━━━━━━│ B │           │
+     │      ╰───╯                            ╰───╯           │
+     │        ↑                                ↑             │
+     │   Arrow STARTS here             Arrow ENDS here       │
+     │   (inside circle)               (inside circle)       │
+     └───────────────────────────────────────────────────────┘
+```
+
+Problems:
+- Arrow starts **inside** the source node
+- Arrow ends **inside** the target node  
+- Arrowhead **hidden** inside the circle
+
+---
 
 ### The Solution: Ray–Circle Intersection
 
 ```
+     ✅ BOUNDARY-TO-BOUNDARY (correct)
      ┌───────────────────────────────────────────────────────┐
-     │   Node A                              Node B          │
-     │      ●──────────────────────────────────▶●            │
-     │   (start)                              (end)          │
-     │                                                       │
-     │   Arrow starts ON circle A boundary                   │
-     │   Arrow ends ON circle B boundary                     │
-     │   Clean, professional appearance                      │
+     │      ╭───╮                            ╭───╮           │
+     │      │ A │●━━━━━━━━━━━━━━━━━━━━━━━━▶●│ B │           │
+     │      ╰───╯                            ╰───╯           │
+     │          ↑                          ↑                 │
+     │   Arrow STARTS here          Arrow ENDS here          │
+     │   (on circle edge)           (on circle edge)         │
      └───────────────────────────────────────────────────────┘
 ```
 
-### The Math
+---
+
+### The Algorithm (Step by Step)
+
+**Given:**
+- Node A center: `(sourceX, sourceY)`
+- Node B center: `(targetX, targetY)`  
+- Circle radius: `RADIUS = 48px`
+
+**Step 1: Calculate Direction Vector**
+```typescript
+const dx = targetX - sourceX;  // Horizontal distance
+const dy = targetY - sourceY;  // Vertical distance
+const distance = Math.sqrt(dx * dx + dy * dy);  // Total distance
+```
+
+**Step 2: Normalize to Unit Vector**
+```typescript
+const dirX = dx / distance;  // Direction X (range: -1 to 1)
+const dirY = dy / distance;  // Direction Y (range: -1 to 1)
+```
+
+**Step 3: Find Boundary Points**
+```typescript
+// Start point: Move FROM source center TOWARD target, stop at boundary
+const startX = sourceX + dirX * RADIUS;
+const startY = sourceY + dirY * RADIUS;
+
+// End point: Move FROM target center TOWARD source, stop at boundary  
+const endX = targetX - dirX * RADIUS;
+const endY = targetY - dirY * RADIUS;
+```
+
+**Step 4: Draw Arrow**
+```typescript
+<line
+  x1={startX} y1={startY}  // Start on source boundary
+  x2={endX}   y2={endY}    // End on target boundary
+  stroke="#64748b"
+  strokeWidth="2"
+  markerEnd="url(#arrowTip)"
+/>
+```
+
+---
+
+### Actual Implementation (from `TaskCanvas.tsx`)
 
 ```typescript
-// Given: Node A center (x1, y1), radius r1
-//        Node B center (x2, y2), radius r2
+// Circle visual: w-24 = 96px, so radius = 48px
+const RADIUS = 48;
 
-// Step 1: Calculate direction vector
-const dx = x2 - x1;
-const dy = y2 - y1;
-const len = Math.sqrt(dx * dx + dy * dy);
-
-// Step 2: Normalize direction
-const ux = dx / len;  // Unit vector x
-const uy = dy / len;  // Unit vector y
-
-// Step 3: Calculate boundary points
-const start = {
-  x: x1 + ux * r1,    // Start on A's boundary
-  y: y1 + uy * r1
-};
-
-const end = {
-  x: x2 - ux * r2,    // End on B's boundary
-  y: y2 - uy * r2
-};
-
-// Draw arrow from start → end
+connections.forEach(([sourceIdx, targetIdx]) => {
+  const sourceCircle = layoutNodes[sourceIdx];
+  const targetCircle = layoutNodes[targetIdx];
+  
+  // Get circle centers (these are now settled)
+  const sourceX = sourceCircle.x ?? 0;
+  const sourceY = sourceCircle.y ?? 0;
+  const targetX = targetCircle.x ?? 0;
+  const targetY = targetCircle.y ?? 0;
+  
+  // Calculate direction from source to target
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  
+  if (distance < RADIUS * 2) return; // Skip if circles overlap
+  
+  // Normalize direction
+  const dirX = dx / distance;
+  const dirY = dy / distance;
+  
+  // BOUNDARY POINTS:
+  // Dot on SOURCE circle boundary (closest to target)
+  const startX = sourceX + dirX * RADIUS;
+  const startY = sourceY + dirY * RADIUS;
+  
+  // Dot on TARGET circle boundary (closest to source)
+  const endX = targetX - dirX * RADIUS;
+  const endY = targetY - dirY * RADIUS;
+  
+  points.push({ startX, startY, endX, endY });
+});
 ```
 
-### Implementation Details
+---
 
-| Component | Description |
-|-----------|-------------|
-| **Node Radius** | 48px (96px diameter circles) |
-| **Arrow Gap** | 2px offset from boundary for visual clarity |
-| **Arrow Size** | 10px arrowhead using SVG `marker-end` |
-| **Rendering** | Phased: circles first, then arrows after settling |
+### SVG Arrowhead Marker
 
-### Phased Rendering
-
-To ensure arrows calculate correctly, rendering happens in 3 phases:
-
-```
-Phase 1: "loading"
-   └── Show loading state
-   
-Phase 2: "circles" (300ms delay)
-   └── Render circles, hide arrows
-   
-Phase 3: "arrows" (500ms delay)
-   └── Calculate boundary points
-   └── Render arrows with correct positions
+```typescript
+<defs>
+  <marker
+    id="arrowTip"
+    markerWidth="10"
+    markerHeight="7"
+    refX="10"      // Position tip at end of line
+    refY="3.5"     // Center vertically
+    orient="auto"  // Rotate with line direction
+  >
+    <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+  </marker>
+</defs>
 ```
 
-This ensures circles are positioned and stable before arrow math runs.
+| Property | Value | Purpose |
+|----------|-------|---------|
+| `markerWidth` | 10 | Arrow width in pixels |
+| `markerHeight` | 7 | Arrow height in pixels |
+| `refX` | 10 | Align tip with line endpoint |
+| `refY` | 3.5 | Center arrow on line |
+| `orient` | auto | Rotate to match line direction |
 
-### Why This Matters
+---
 
-| Without Boundary Routing | With Boundary Routing |
-|--------------------------|----------------------|
-| Arrows start from center | Arrows start from edge |
-| Arrows end inside circles | Arrows touch circle boundary |
-| Arrowheads hidden | Arrowheads visible |
-| Looks broken | Looks professional |
+### Phased Rendering (Timing)
+
+Arrows must wait for circles to settle before calculating positions:
+
+```
+Timeline:
+─────────────────────────────────────────────────────────────►
+0ms         100ms                    600ms
+│           │                        │
+├───────────┼────────────────────────┤
+│  HIDDEN   │     CIRCLES ONLY       │  ARROWS + CIRCLES
+│           │                        │
+│           │  - Circles render      │  - Calculate boundary points
+│           │  - Force layout runs   │  - Draw lines with arrowheads
+│           │  - Positions stabilize │  - Show animated flow dots
+│           │                        │
+└───────────┴────────────────────────┴──────────────────────►
+```
+
+**Implementation:**
+```typescript
+// Phase 1: Reset on task change
+useEffect(() => {
+  setShowCircles(false);
+  setShowArrows(false);
+}, [tasksKey]);
+
+// Phase 2: Show circles after 100ms
+useEffect(() => {
+  const timer = setTimeout(() => setShowCircles(true), 100);
+  return () => clearTimeout(timer);
+}, [tasksKey]);
+
+// Phase 3: Calculate arrows after 500ms (circles settled)
+useEffect(() => {
+  if (!showCircles) return;
+  const timer = setTimeout(() => {
+    // Calculate boundary points here
+    setConnectionPoints(points);
+    setShowArrows(true);
+  }, 500);
+  return () => clearTimeout(timer);
+}, [showCircles, layoutNodes]);
+```
+
+---
+
+### Animated Flow Dots
+
+Each arrow has a pulsing dot that travels from start to end:
+
+```typescript
+<circle r="4" fill="#6366f1" opacity="0.8">
+  <animateMotion
+    dur="2s"
+    repeatCount="indefinite"
+    path={`M ${startX} ${startY} L ${endX} ${endY}`}
+  />
+</circle>
+```
+
+| Property | Value | Effect |
+|----------|-------|--------|
+| `r` | 4 | Dot radius (4px) |
+| `fill` | #6366f1 | Indigo color |
+| `dur` | 2s | One loop every 2 seconds |
+| `repeatCount` | indefinite | Loops forever |
+
+---
+
+### Why This Algorithm?
+
+| Alternative | Problem |
+|-------------|---------|
+| Center-to-center | Arrows inside circles |
+| Fixed offsets | Breaks at different angles |
+| CSS transforms | Hard to calculate precisely |
+| **Ray–circle intersection** | ✅ Works at any angle, always on boundary |
+
+This is the **industry-standard** solution used in:
+- Figma connectors
+- draw.io / diagrams.net
+- Mermaid.js flowcharts
+- D3.js graph visualizations
 
 ---
 
