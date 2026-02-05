@@ -45,7 +45,7 @@ export function TaskCanvas({
   // Generate clean straight connection lines between circle edges
   const generateConnections = () => {
     const elements: JSX.Element[] = [];
-    const nodeRadius = 48; // Radius of the circle node
+    const nodeRadius = 48; // Radius of the circle (w-24 = 96px, so radius = 48px)
     
     if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
@@ -164,7 +164,7 @@ export function TaskCanvas({
         {generateConnections()}
       </svg>
 
-      {/* Task Nodes */}
+      {/* Task Nodes - positioned so CIRCLE is at x,y (not the whole component) */}
       {positionedNodes.map((task) => (
         <div
           key={task.id}
@@ -172,7 +172,8 @@ export function TaskCanvas({
           style={{
             left: `${task.x}px`,
             top: `${task.y}px`,
-            transform: 'translate(-50%, -50%)',
+            // Only center horizontally, align top of component at y - circleRadius
+            transform: 'translate(-50%, -48px)', // 48px = half of circle height (96px)
           }}
         >
           <TaskNode
