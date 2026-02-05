@@ -34,12 +34,14 @@ interface UseForceLayoutOptions {
 
 // Calculate optimal grid layout based on node count
 function calculateGridPosition(index: number, totalNodes: number, width: number, height: number) {
+  // Layout nodes in a sequential workflow pattern (left-to-right, top-to-bottom flow)
+  
   if (totalNodes <= 1) {
     return { x: width / 2, y: height / 2 };
   }
   
   if (totalNodes === 2) {
-    // Side by side
+    // Horizontal flow: 1 → 2
     return {
       x: index === 0 ? width * 0.3 : width * 0.7,
       y: height / 2,
@@ -47,41 +49,38 @@ function calculateGridPosition(index: number, totalNodes: number, width: number,
   }
   
   if (totalNodes === 3) {
-    // Triangle: 2 on top, 1 on bottom
-    if (index < 2) {
-      return {
-        x: index === 0 ? width * 0.3 : width * 0.7,
-        y: height * 0.3,
-      };
-    }
-    return { x: width / 2, y: height * 0.7 };
+    // Stepped flow: 1 → 2 → 3
+    const positions = [
+      { x: width * 0.2, y: height * 0.25 },
+      { x: width * 0.5, y: height * 0.5 },
+      { x: width * 0.8, y: height * 0.75 },
+    ];
+    return positions[index];
   }
   
   if (totalNodes === 4) {
-    // 2x2 grid
-    const row = Math.floor(index / 2);
-    const col = index % 2;
-    return {
-      x: col === 0 ? width * 0.3 : width * 0.7,
-      y: row === 0 ? height * 0.25 : height * 0.7,
-    };
+    // Snake flow: 1 → 2
+    //             ↓
+    //         4 ← 3
+    const positions = [
+      { x: width * 0.25, y: height * 0.25 },  // 1: top-left
+      { x: width * 0.75, y: height * 0.25 },  // 2: top-right
+      { x: width * 0.75, y: height * 0.7 },   // 3: bottom-right
+      { x: width * 0.25, y: height * 0.7 },   // 4: bottom-left
+    ];
+    return positions[index];
   }
   
   if (totalNodes === 5) {
-    // 2 on top, 2 in middle, 1 on bottom
-    if (index < 2) {
-      return {
-        x: index === 0 ? width * 0.3 : width * 0.7,
-        y: height * 0.2,
-      };
-    }
-    if (index < 4) {
-      return {
-        x: (index - 2) === 0 ? width * 0.3 : width * 0.7,
-        y: height * 0.5,
-      };
-    }
-    return { x: width / 2, y: height * 0.8 };
+    // Extended snake flow
+    const positions = [
+      { x: width * 0.2, y: height * 0.2 },
+      { x: width * 0.5, y: height * 0.2 },
+      { x: width * 0.8, y: height * 0.45 },
+      { x: width * 0.5, y: height * 0.7 },
+      { x: width * 0.2, y: height * 0.7 },
+    ];
+    return positions[index];
   }
   
   // For 6+ nodes: dynamic grid
@@ -106,35 +105,12 @@ function generateConnections(nodeCount: number): [number, number][] {
   
   if (nodeCount < 2) return connections;
   
-  if (nodeCount === 2) {
-    connections.push([0, 1]);
-  } else if (nodeCount === 3) {
-    // Triangle flow: 0→2, 1→2
-    connections.push([0, 2], [1, 2]);
-  } else if (nodeCount === 4) {
-    // 2x2 grid flow: top→bottom, bottom-left→bottom-right
-    connections.push([0, 2], [1, 3], [2, 3]);
-  } else if (nodeCount === 5) {
-    // Extended flow
-    connections.push([0, 2], [1, 3], [2, 4], [3, 4]);
-  } else {
-    // For 6+ nodes: connect each row to next row
-    const cols = Math.ceil(Math.sqrt(nodeCount));
-    for (let i = 0; i < nodeCount - cols; i++) {
-      // Connect to node below
-      if (i + cols < nodeCount) {
-        connections.push([i, i + cols]);
-      }
-      // Connect to diagonal
-      if (i % cols < cols - 1 && i + cols + 1 < nodeCount) {
-        connections.push([i, i + cols + 1]);
-      }
-    }
-    // Connect last row horizontally
-    const lastRowStart = Math.floor((nodeCount - 1) / cols) * cols;
-    for (let i = lastRowStart; i < nodeCount - 1; i++) {
-      connections.push([i, i + 1]);
-    }
+  // Create a sequential workflow: each task connects to the next
+  // This represents a logical process flow regardless of stakes
+  // Example: Task 1 → Task 2 → Task 3 → Task 4
+  
+  for (let i = 0; i < nodeCount - 1; i++) {
+    connections.push([i, i + 1]);
   }
   
   return connections;
