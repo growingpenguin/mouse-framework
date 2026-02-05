@@ -28,7 +28,7 @@ This interface treats AI as a **framework builder**, not just a rule-based execu
 
 ## ✨ Features
 
-### 🎨 Force-Directed Layout (New!)
+### 🎨 Force-Directed Layout
 
 Task nodes use **d3-force** with Fruchterman–Reingold style physics:
 
@@ -45,6 +45,20 @@ Task nodes use **d3-force** with Fruchterman–Reingold style physics:
 - Nodes spread out smoothly with no overlaps
 - Connection lines update in real-time
 - Works for 1-10+ nodes
+
+### 🎯 Boundary-to-Boundary Arrow Routing
+
+Connections use the **Ray–circle intersection** algorithm:
+
+| Feature | Description |
+|---------|-------------|
+| **Algorithm** | Ray–circle intersection (center-to-boundary projection) |
+| **Start point** | Precisely on source circle's edge |
+| **End point** | Precisely on target circle's edge |
+| **Arrowhead** | SVG marker, always visible |
+| **Rendering** | Phased (circles first, arrows after settling) |
+
+The result: clean, professional arrows that connect circle surfaces, not centers.
 
 ### 📋 3 Demo Scenarios (No API Key Required!)
 
@@ -507,9 +521,100 @@ forceSimulation(nodes)
 | 1 | Centered |
 | 2 | Side by side |
 | 3 | Triangle |
-| 4 | 2×2 grid |
+| 4 | Z-pattern (2×2) |
 | 5 | 2-2-1 pyramid |
 | 6+ | √n × √n grid |
+
+---
+
+## 🎯 Arrow Routing Algorithm
+
+Connections between task nodes use **boundary-to-boundary edge routing** with the **Ray–circle intersection** algorithm:
+
+### The Problem
+Simply drawing a line from center to center looks wrong:
+- Arrow starts inside the source node
+- Arrow ends inside the target node
+- Arrowhead hidden inside the circle
+
+### The Solution: Ray–Circle Intersection
+
+```
+     ┌───────────────────────────────────────────────────────┐
+     │   Node A                              Node B          │
+     │      ●──────────────────────────────────▶●            │
+     │   (start)                              (end)          │
+     │                                                       │
+     │   Arrow starts ON circle A boundary                   │
+     │   Arrow ends ON circle B boundary                     │
+     │   Clean, professional appearance                      │
+     └───────────────────────────────────────────────────────┘
+```
+
+### The Math
+
+```typescript
+// Given: Node A center (x1, y1), radius r1
+//        Node B center (x2, y2), radius r2
+
+// Step 1: Calculate direction vector
+const dx = x2 - x1;
+const dy = y2 - y1;
+const len = Math.sqrt(dx * dx + dy * dy);
+
+// Step 2: Normalize direction
+const ux = dx / len;  // Unit vector x
+const uy = dy / len;  // Unit vector y
+
+// Step 3: Calculate boundary points
+const start = {
+  x: x1 + ux * r1,    // Start on A's boundary
+  y: y1 + uy * r1
+};
+
+const end = {
+  x: x2 - ux * r2,    // End on B's boundary
+  y: y2 - uy * r2
+};
+
+// Draw arrow from start → end
+```
+
+### Implementation Details
+
+| Component | Description |
+|-----------|-------------|
+| **Node Radius** | 48px (96px diameter circles) |
+| **Arrow Gap** | 2px offset from boundary for visual clarity |
+| **Arrow Size** | 10px arrowhead using SVG `marker-end` |
+| **Rendering** | Phased: circles first, then arrows after settling |
+
+### Phased Rendering
+
+To ensure arrows calculate correctly, rendering happens in 3 phases:
+
+```
+Phase 1: "loading"
+   └── Show loading state
+   
+Phase 2: "circles" (300ms delay)
+   └── Render circles, hide arrows
+   
+Phase 3: "arrows" (500ms delay)
+   └── Calculate boundary points
+   └── Render arrows with correct positions
+```
+
+This ensures circles are positioned and stable before arrow math runs.
+
+### Why This Matters
+
+| Without Boundary Routing | With Boundary Routing |
+|--------------------------|----------------------|
+| Arrows start from center | Arrows start from edge |
+| Arrows end inside circles | Arrows touch circle boundary |
+| Arrowheads hidden | Arrowheads visible |
+| Looks broken | Looks professional |
 
 ---
 
