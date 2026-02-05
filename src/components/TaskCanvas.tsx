@@ -45,7 +45,7 @@ export function TaskCanvas({
   // Generate clean straight connection lines between circle edges
   const generateConnections = () => {
     const elements: JSX.Element[] = [];
-    const nodeRadius = 50; // Radius of the circle node
+    const nodeRadius = 48; // Radius of the circle node
     
     if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
@@ -72,14 +72,14 @@ export function TaskCanvas({
       const startX = from.x + nx * nodeRadius;
       const startY = from.y + ny * nodeRadius;
       
-      // End point: edge of the "to" circle (leave room for arrow)
-      const endX = to.x - nx * (nodeRadius + 8);
-      const endY = to.y - ny * (nodeRadius + 8);
+      // End point: edge of the "to" circle (arrow will touch the circle)
+      const endX = to.x - nx * nodeRadius;
+      const endY = to.y - ny * nodeRadius;
       
-      // Simple straight line
+      // Simple straight line path for animated dot
       const path = `M ${startX} ${startY} L ${endX} ${endY}`;
       
-      // Connection line
+      // Connection line (no arrow marker, we'll draw arrow separately)
       elements.push(
         <line
           key={`connection-${i}`}
@@ -90,8 +90,23 @@ export function TaskCanvas({
           stroke="#94a3b8"
           strokeWidth="2"
           strokeLinecap="round"
-          markerEnd="url(#arrowhead)"
           className="transition-opacity duration-300"
+        />
+      );
+      
+      // Draw arrow at the end touching the circle
+      const arrowSize = 10;
+      const arrowAngle = Math.atan2(dy, dx);
+      const arrowX1 = endX - arrowSize * Math.cos(arrowAngle - Math.PI / 6);
+      const arrowY1 = endY - arrowSize * Math.sin(arrowAngle - Math.PI / 6);
+      const arrowX2 = endX - arrowSize * Math.cos(arrowAngle + Math.PI / 6);
+      const arrowY2 = endY - arrowSize * Math.sin(arrowAngle + Math.PI / 6);
+      
+      elements.push(
+        <polygon
+          key={`arrow-${i}`}
+          points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
+          fill="#64748b"
         />
       );
       
