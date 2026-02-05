@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Undo2, RotateCcw, Eye, CheckCircle, ArrowRight, Send, CreditCard, Shield, Check, X, History, AlertTriangle } from 'lucide-react';
+import { Undo2, RotateCcw, Eye, CheckCircle, ArrowRight, ArrowLeft, Send, CreditCard, Shield, Check, X, History, AlertTriangle } from 'lucide-react';
 
 interface ReversibilityCheckpointsProps {
   onNext: () => void;
+  onBack?: () => void;
 }
 
 interface ActionHistoryItem {
@@ -17,7 +18,7 @@ interface CheckpointState {
   approved: boolean;
 }
 
-export function ReversibilityCheckpoints({ onNext }: ReversibilityCheckpointsProps) {
+export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckpointsProps) {
   // Demo state for reversibility controls
   const [actionHistory, setActionHistory] = useState<ActionHistoryItem[]>([
     { id: 1, action: 'AI drafted email to legal team', timestamp: '2 min ago', undone: false },
@@ -375,7 +376,16 @@ export function ReversibilityCheckpoints({ onNext }: ReversibilityCheckpointsPro
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 border border-slate-300"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          )}
           <button
             onClick={onNext}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Check, X, Lock, Building2, ShieldAlert, ArrowRight, Brain, LayoutList } from 'lucide-react';
+import { Check, X, Lock, Building2, ShieldAlert, ArrowRight, ArrowLeft, Brain, LayoutList } from 'lucide-react';
 import { TaskNodeData } from '@/components/TaskNode';
 import { SelfCheckPanel } from '@/components/SelfCheckPanel';
 import { performSelfCheck, generateSelfCheckSummary } from '@/lib/selfcheck';
@@ -7,6 +7,7 @@ import { performSelfCheck, generateSelfCheckSummary } from '@/lib/selfcheck';
 interface DelegationRulesProps {
   tasks: TaskNodeData[];
   onNext: () => void;
+  onBack?: () => void;
 }
 
 type ViewMode = 'stakes' | 'selfcheck';
@@ -25,7 +26,7 @@ const riskIcons = {
   'company-wide': Building2,
 };
 
-export function DelegationRules({ tasks, onNext }: DelegationRulesProps) {
+export function DelegationRules({ tasks, onNext, onBack }: DelegationRulesProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('stakes');
 
   // Perform SelfCheck analysis
@@ -261,7 +262,16 @@ export function DelegationRules({ tasks, onNext }: DelegationRulesProps) {
         )}
 
         {/* Action Button */}
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center gap-4 mt-8">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 border border-slate-300"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          )}
           <button
             onClick={onNext}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"

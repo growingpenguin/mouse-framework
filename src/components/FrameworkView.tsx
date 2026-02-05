@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Edit3, Trash2, ArrowRight, Plus, ArrowUp, ArrowDown, Shield, X, Check, Sparkles } from 'lucide-react';
+import { Edit3, Trash2, ArrowRight, ArrowLeft, Plus, ArrowUp, ArrowDown, Shield, X, Check, Sparkles } from 'lucide-react';
 import { TaskNodeData, StakeLevel } from '@/components/TaskNode';
 import { TaskCanvas } from '@/components/TaskCanvas';
 
 interface FrameworkViewProps {
   initialTasks: TaskNodeData[];
   onNext: (tasks: TaskNodeData[]) => void;
+  onBack?: () => void;
 }
 
-export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
+export function FrameworkView({ initialTasks, onNext, onBack }: FrameworkViewProps) {
   const [tasks, setTasks] = useState<TaskNodeData[]>(() => {
     // Position tasks in a nice grid layout
     const positions = [
@@ -320,6 +321,15 @@ export function FrameworkView({ initialTasks, onNext }: FrameworkViewProps) {
 
         {/* Action Button */}
         <div className="flex justify-center">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center gap-2 border border-slate-300 shadow-sm"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back
+            </button>
+          )}
           <button
             onClick={() => onNext(tasks)}
             disabled={tasks.length === 0}

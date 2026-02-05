@@ -1,12 +1,13 @@
-import { Lightbulb, CheckCircle, XCircle, Award, RotateCcw } from 'lucide-react';
+import { Lightbulb, CheckCircle, XCircle, Award, RotateCcw, ArrowLeft } from 'lucide-react';
 import { TaskNodeData } from '@/components/TaskNode';
 
 interface LearningOutcomeProps {
   tasks: TaskNodeData[];
   onRestart: () => void;
+  onBack?: () => void;
 }
 
-export function LearningOutcome({ tasks, onRestart }: LearningOutcomeProps) {
+export function LearningOutcome({ tasks, onRestart, onBack }: LearningOutcomeProps) {
   const delegatedTasks = tasks.filter(t => t.stakes === 'low');
   const humanTasks = tasks.filter(t => t.stakes === 'high');
 
@@ -189,8 +190,17 @@ export function LearningOutcome({ tasks, onRestart }: LearningOutcomeProps) {
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="flex justify-center">
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 border border-slate-300"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+          )}
           <button
             onClick={onRestart}
             className="flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200"

@@ -12,6 +12,7 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('input');
   const [tasks, setTasks] = useState<TaskNodeData[]>([]);
 
+  // Forward navigation
   const handleTasksDecomposed = (decomposedTasks: TaskNodeData[]) => {
     setTasks(decomposedTasks);
     setCurrentScreen('framework');
@@ -30,6 +31,23 @@ export default function App() {
     setCurrentScreen('learning');
   };
 
+  // Back navigation
+  const handleBackToInput = () => {
+    setCurrentScreen('input');
+  };
+
+  const handleBackToFramework = () => {
+    setCurrentScreen('framework');
+  };
+
+  const handleBackToDelegation = () => {
+    setCurrentScreen('delegation');
+  };
+
+  const handleBackToReversibility = () => {
+    setCurrentScreen('reversibility');
+  };
+
   const handleRestart = () => {
     setCurrentScreen('input');
     setTasks([]);
@@ -45,6 +63,7 @@ export default function App() {
         <FrameworkView
           initialTasks={tasks}
           onNext={handleFrameworkComplete}
+          onBack={handleBackToInput}
         />
       )}
       
@@ -52,15 +71,23 @@ export default function App() {
         <DelegationRules
           tasks={tasks}
           onNext={handleDelegationComplete}
+          onBack={handleBackToFramework}
         />
       )}
       
       {currentScreen === 'reversibility' && (
-        <ReversibilityCheckpoints onNext={handleReversibilityComplete} />
+        <ReversibilityCheckpoints 
+          onNext={handleReversibilityComplete} 
+          onBack={handleBackToDelegation}
+        />
       )}
       
       {currentScreen === 'learning' && (
-        <LearningOutcome tasks={tasks} onRestart={handleRestart} />
+        <LearningOutcome 
+          tasks={tasks} 
+          onRestart={handleRestart} 
+          onBack={handleBackToReversibility}
+        />
       )}
     </div>
   );
