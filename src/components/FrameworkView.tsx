@@ -130,8 +130,19 @@ export function FrameworkView({ initialTasks, onNext, onBack }: FrameworkViewPro
   const selectedTaskData = tasks.find(t => t.id === selectedTask);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-8">
-      <div className="max-w-5xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8 relative">
+      {/* Back Button - Top Left */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-6 left-6 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-slate-300 shadow-sm z-50"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+      )}
+
+      <div className="max-w-5xl w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-200/50 mb-4">
@@ -321,15 +332,6 @@ export function FrameworkView({ initialTasks, onNext, onBack }: FrameworkViewPro
 
         {/* Action Button */}
         <div className="flex justify-center">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center gap-2 border border-slate-300 shadow-sm"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back
-            </button>
-          )}
           <button
             onClick={() => onNext(tasks)}
             disabled={tasks.length === 0}

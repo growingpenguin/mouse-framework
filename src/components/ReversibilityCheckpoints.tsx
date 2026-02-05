@@ -96,8 +96,19 @@ export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckp
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
-      <div className="max-w-5xl w-full">
+    <div className="min-h-screen bg-slate-50 p-8 relative">
+      {/* Back Button - Top Left */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-6 left-6 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-slate-300 shadow-sm z-50"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+      )}
+
+      <div className="max-w-5xl w-full mx-auto">
         <h1 className="text-4xl font-semibold text-slate-900 mb-4 text-center">
           Control & safety
         </h1>
@@ -146,14 +157,14 @@ export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckp
             <button
               onClick={() => setShowHistory(!showHistory)}
               className="bg-white rounded-xl shadow-sm border-2 border-blue-200 p-6 text-left hover:border-blue-400 hover:shadow-md transition-all cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
+                >
+                  <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
                 <RotateCcw className="w-6 h-6 text-blue-600" />
-              </div>
-              <h3 className="font-semibold text-slate-900 mb-2">
+                  </div>
+                  <h3 className="font-semibold text-slate-900 mb-2">
                 Rollback
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
+                  </h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
                 {showHistory ? 'Click to hide history' : 'Click to view action history'}
               </p>
             </button>
@@ -165,7 +176,7 @@ export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckp
             >
               <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
                 <Eye className="w-6 h-6 text-blue-600" />
-              </div>
+                </div>
               <h3 className="font-semibold text-slate-900 mb-2">
                 Preview before commit
               </h3>
@@ -348,7 +359,7 @@ export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckp
             <span className="text-sm text-slate-500">
               {checkpoints.filter(c => c.approved).length} / {checkpoints.length} approved
             </span>
-          </div>
+              </div>
           <div className="w-full bg-slate-200 rounded-full h-2">
             <div 
               className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
@@ -376,16 +387,7 @@ export function ReversibilityCheckpoints({ onNext, onBack }: ReversibilityCheckp
         </div>
 
         {/* Action Button */}
-        <div className="flex justify-center gap-4">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 border border-slate-300"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-          )}
+        <div className="flex justify-center">
           <button
             onClick={onNext}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"

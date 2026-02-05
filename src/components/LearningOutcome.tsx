@@ -12,8 +12,19 @@ export function LearningOutcome({ tasks, onRestart, onBack }: LearningOutcomePro
   const humanTasks = tasks.filter(t => t.stakes === 'high');
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen bg-slate-50 p-8 relative">
+      {/* Back Button - Top Left */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-6 left-6 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-slate-300 shadow-sm z-50"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+      )}
+
+      <div className="max-w-4xl w-full mx-auto">
         <h1 className="text-4xl font-semibold text-slate-900 mb-4 text-center">
           What you learned
         </h1>
@@ -190,17 +201,8 @@ export function LearningOutcome({ tasks, onRestart, onBack }: LearningOutcomePro
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 border border-slate-300"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-          )}
+        {/* Action Button */}
+        <div className="flex justify-center">
           <button
             onClick={onRestart}
             className="flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200"
