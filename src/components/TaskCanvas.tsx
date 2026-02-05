@@ -42,47 +42,62 @@ export function TaskCanvas({
     padding: 30,
   });
 
-  // Generate clean straight connection lines between circle edges
+  /**
+   * BOUNDARY-TO-BOUNDARY EDGE ROUTING
+   * 
+   * Algorithm: Ray–Circle Intersection
+   * 
+   * 1. Draw imaginary line from center A → center B
+   * 2. Find where line hits boundary of circle A (start point)
+   * 3. Find where line hits boundary of circle B (end point)  
+   * 4. Draw arrow from start → end
+   * 
+   * This is the industry-standard solution for node-link diagrams.
+   */
   const generateConnections = () => {
     const elements: JSX.Element[] = [];
-    const nodeRadius = 48; // Radius of the circle (w-24 = 96px, so radius = 48px)
+    
+    // Circle radius: w-24 = 96px, so radius = 48px
+    const RADIUS = 48;
     
     if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
     connections.forEach(([fromIdx, toIdx], i) => {
       if (fromIdx >= positionedNodes.length || toIdx >= positionedNodes.length) return;
       
-      const from = positionedNodes[fromIdx];
-      const to = positionedNodes[toIdx];
+      const nodeA = positionedNodes[fromIdx];
+      const nodeB = positionedNodes[toIdx];
       
-      if (!from?.x || !from?.y || !to?.x || !to?.y) return;
+      // Get center coordinates (x, y represent circle centers)
+      const x1 = nodeA.x ?? 0;
+      const y1 = nodeA.y ?? 0;
+      const x2 = nodeB.x ?? 0;
+      const y2 = nodeB.y ?? 0;
       
-      // Calculate direction from one node to another
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      // Step 1: Compute direction vector from A to B
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.sqrt(dx * dx + dy * dy);
       
-      if (distance === 0) return;
+      // Skip if nodes overlap
+      if (len < RADIUS * 2) return;
       
-      // Normalize direction
-      const nx = dx / distance;
-      const ny = dy / distance;
+      // Step 2: Normalize to unit vector
+      const ux = dx / len;
+      const uy = dy / len;
       
-      // Start point: edge of the "from" circle
-      const startX = from.x + nx * nodeRadius;
-      const startY = from.y + ny * nodeRadius;
+      // Step 3: Start point = boundary of circle A (in direction of B)
+      const startX = x1 + ux * RADIUS;
+      const startY = y1 + uy * RADIUS;
       
-      // End point: edge of the "to" circle (arrow will touch the circle)
-      const endX = to.x - nx * nodeRadius;
-      const endY = to.y - ny * nodeRadius;
+      // Step 4: End point = boundary of circle B (facing A)
+      const endX = x2 - ux * RADIUS;
+      const endY = y2 - uy * RADIUS;
       
-      // Simple straight line path for animated dot
-      const path = `M ${startX} ${startY} L ${endX} ${endY}`;
-      
-      // Connection line (no arrow marker, we'll draw arrow separately)
+      // Draw the connection line
       elements.push(
         <line
-          key={`connection-${i}`}
+          key={`line-${i}`}
           x1={startX}
           y1={startY}
           x2={endX}
@@ -90,34 +105,32 @@ export function TaskCanvas({
           stroke="#94a3b8"
           strokeWidth="2"
           strokeLinecap="round"
-          className="transition-opacity duration-300"
         />
       );
       
-      // Draw arrow at the end touching the circle
-      const arrowSize = 10;
-      const arrowAngle = Math.atan2(dy, dx);
-      const arrowX1 = endX - arrowSize * Math.cos(arrowAngle - Math.PI / 6);
-      const arrowY1 = endY - arrowSize * Math.sin(arrowAngle - Math.PI / 6);
-      const arrowX2 = endX - arrowSize * Math.cos(arrowAngle + Math.PI / 6);
-      const arrowY2 = endY - arrowSize * Math.sin(arrowAngle + Math.PI / 6);
+      // Draw arrowhead at end point (touching circle B)
+      const arrowLen = 12;
+      const arrowWidth = Math.PI / 7; // ~25 degrees
+      const angle = Math.atan2(dy, dx);
+      
+      const arrow1X = endX - arrowLen * Math.cos(angle - arrowWidth);
+      const arrow1Y = endY - arrowLen * Math.sin(angle - arrowWidth);
+      const arrow2X = endX - arrowLen * Math.cos(angle + arrowWidth);
+      const arrow2Y = endY - arrowLen * Math.sin(angle + arrowWidth);
       
       elements.push(
         <polygon
           key={`arrow-${i}`}
-          points={`${endX},${endY} ${arrowX1},${arrowY1} ${arrowX2},${arrowY2}`}
+          points={`${endX},${endY} ${arrow1X},${arrow1Y} ${arrow2X},${arrow2Y}`}
           fill="#64748b"
         />
       );
       
-      // Animated dot traveling along the path
+      // Animated dot along path
+      const path = `M ${startX} ${startY} L ${endX} ${endY}`;
       elements.push(
-        <circle key={`dot-${i}`} r="4" fill="#6366f1" className="opacity-80">
-          <animateMotion
-            dur={`${2.5 + (i % 3) * 0.3}s`}
-            repeatCount="indefinite"
-            path={path}
-          />
+        <circle key={`dot-${i}`} r="4" fill="#6366f1" opacity="0.8">
+          <animateMotion dur="2s" repeatCount="indefinite" path={path} />
         </circle>
       );
     });
