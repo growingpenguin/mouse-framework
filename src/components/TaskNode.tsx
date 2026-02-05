@@ -40,12 +40,12 @@ export function TaskNode({ node, onClick, isSelected, showRiskIcons }: TaskNodeP
     <div
       onClick={onClick}
       className={`
-        cursor-pointer transition-all duration-300 ease-out
+        cursor-pointer transition-all duration-300 ease-out flex flex-col items-center
         ${isSelected ? 'scale-110 z-10' : 'hover:scale-105'}
       `}
     >
-      {/* Main Node Circle */}
-      <div className="relative">
+      {/* Main Node Circle - fixed width container ensures circle is centered */}
+      <div className="relative w-24 h-24 flex-shrink-0">
         {/* Glow Effect */}
         <div
           className={`

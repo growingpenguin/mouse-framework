@@ -164,16 +164,16 @@ export function TaskCanvas({
         {generateConnections()}
       </svg>
 
-      {/* Task Nodes - positioned so CIRCLE is at x,y (not the whole component) */}
+      {/* Task Nodes - positioned so CIRCLE CENTER is exactly at x,y */}
       {positionedNodes.map((task) => (
         <div
           key={task.id}
           className="absolute transition-all duration-300 ease-out"
           style={{
-            left: `${task.x}px`,
-            top: `${task.y}px`,
-            // Only center horizontally, align top of component at y - circleRadius
-            transform: 'translate(-50%, -48px)', // 48px = half of circle height (96px)
+            // Position the top-left corner of the node container
+            // Circle is 96px (w-24), so center is at 48px from left/top
+            left: `${(task.x ?? 0) - 48}px`,
+            top: `${(task.y ?? 0) - 48}px`,
           }}
         >
           <TaskNode
