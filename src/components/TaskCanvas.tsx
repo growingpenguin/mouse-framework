@@ -42,10 +42,10 @@ export function TaskCanvas({
     padding: 30,
   });
 
-  // Generate curved connection paths between circle edges
+  // Generate clean straight connection lines between circle edges
   const generateConnections = () => {
     const elements: JSX.Element[] = [];
-    const nodeRadius = 45; // Radius of the circle node
+    const nodeRadius = 50; // Radius of the circle node
     
     if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
@@ -72,40 +72,34 @@ export function TaskCanvas({
       const startX = from.x + nx * nodeRadius;
       const startY = from.y + ny * nodeRadius;
       
-      // End point: edge of the "to" circle
-      const endX = to.x - nx * nodeRadius;
-      const endY = to.y - ny * nodeRadius;
+      // End point: edge of the "to" circle (leave room for arrow)
+      const endX = to.x - nx * (nodeRadius + 8);
+      const endY = to.y - ny * (nodeRadius + 8);
       
-      // Create curved bezier path
-      const midX = (startX + endX) / 2;
-      const midY = (startY + endY) / 2;
-      
-      // Add perpendicular curve offset for nicer curves
-      const curveMagnitude = Math.min(50, distance * 0.2);
-      const curveX = midX - ny * curveMagnitude * (i % 2 === 0 ? 1 : -1) * 0.3;
-      const curveY = midY + nx * curveMagnitude * (i % 2 === 0 ? 1 : -1) * 0.3;
-      
-      const path = `M ${startX} ${startY} Q ${curveX} ${curveY}, ${endX} ${endY}`;
+      // Simple straight line
+      const path = `M ${startX} ${startY} L ${endX} ${endY}`;
       
       // Connection line
       elements.push(
-        <path
+        <line
           key={`connection-${i}`}
-          d={path}
-          fill="none"
-          stroke="url(#connectionGradient)"
-          strokeWidth="3"
+          x1={startX}
+          y1={startY}
+          x2={endX}
+          y2={endY}
+          stroke="#94a3b8"
+          strokeWidth="2"
           strokeLinecap="round"
-          className="opacity-70 transition-opacity duration-300"
           markerEnd="url(#arrowhead)"
+          className="transition-opacity duration-300"
         />
       );
       
       // Animated dot traveling along the path
       elements.push(
-        <circle key={`dot-${i}`} r="5" fill="#6366f1" className="opacity-90">
+        <circle key={`dot-${i}`} r="4" fill="#6366f1" className="opacity-80">
           <animateMotion
-            dur={`${2 + (i % 3) * 0.5}s`}
+            dur={`${2.5 + (i % 3) * 0.3}s`}
             repeatCount="indefinite"
             path={path}
           />
@@ -140,17 +134,16 @@ export function TaskCanvas({
             <stop offset="0%" stopColor="#10b981" />
             <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
-          {/* Arrow marker */}
+          {/* Clean arrow marker */}
           <marker
             id="arrowhead"
-            markerWidth="12"
-            markerHeight="10"
-            refX="10"
-            refY="5"
+            markerWidth="8"
+            markerHeight="8"
+            refX="7"
+            refY="4"
             orient="auto"
-            markerUnits="strokeWidth"
           >
-            <polygon points="0 0, 12 5, 0 10, 2 5" fill="#6366f1" />
+            <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#64748b" />
           </marker>
         </defs>
         {generateConnections()}
