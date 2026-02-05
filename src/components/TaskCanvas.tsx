@@ -42,9 +42,10 @@ export function TaskCanvas({
     padding: 30,
   });
 
-  // Generate curved connection paths based on actual connections
+  // Generate curved connection paths between circle edges
   const generateConnections = () => {
     const elements: JSX.Element[] = [];
+    const nodeRadius = 45; // Radius of the circle node
     
     if (positionedNodes.length < 2 || connections.length === 0) return elements;
     
@@ -56,17 +57,35 @@ export function TaskCanvas({
       
       if (!from?.x || !from?.y || !to?.x || !to?.y) return;
       
-      const startX = from.x;
-      const startY = from.y + 55; // Below the node
-      const endX = to.x;
-      const endY = to.y - 55; // Above the target node
+      // Calculate direction from one node to another
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance === 0) return;
+      
+      // Normalize direction
+      const nx = dx / distance;
+      const ny = dy / distance;
+      
+      // Start point: edge of the "from" circle
+      const startX = from.x + nx * nodeRadius;
+      const startY = from.y + ny * nodeRadius;
+      
+      // End point: edge of the "to" circle
+      const endX = to.x - nx * nodeRadius;
+      const endY = to.y - ny * nodeRadius;
       
       // Create curved bezier path
+      const midX = (startX + endX) / 2;
       const midY = (startY + endY) / 2;
       
-      // Add some horizontal curve for better visuals
-      const curveOffset = (endX - startX) * 0.1;
-      const path = `M ${startX} ${startY} C ${startX + curveOffset} ${midY}, ${endX - curveOffset} ${midY}, ${endX} ${endY}`;
+      // Add perpendicular curve offset for nicer curves
+      const curveMagnitude = Math.min(50, distance * 0.2);
+      const curveX = midX - ny * curveMagnitude * (i % 2 === 0 ? 1 : -1) * 0.3;
+      const curveY = midY + nx * curveMagnitude * (i % 2 === 0 ? 1 : -1) * 0.3;
+      
+      const path = `M ${startX} ${startY} Q ${curveX} ${curveY}, ${endX} ${endY}`;
       
       // Connection line
       elements.push(
@@ -75,15 +94,16 @@ export function TaskCanvas({
           d={path}
           fill="none"
           stroke="url(#connectionGradient)"
-          strokeWidth="2.5"
+          strokeWidth="3"
           strokeLinecap="round"
-          className="opacity-60 transition-opacity duration-300"
+          className="opacity-70 transition-opacity duration-300"
+          markerEnd="url(#arrowhead)"
         />
       );
       
       // Animated dot traveling along the path
       elements.push(
-        <circle key={`dot-${i}`} r="4" fill="#6366f1" className="opacity-80">
+        <circle key={`dot-${i}`} r="5" fill="#6366f1" className="opacity-90">
           <animateMotion
             dur={`${2 + (i % 3) * 0.5}s`}
             repeatCount="indefinite"
@@ -120,16 +140,17 @@ export function TaskCanvas({
             <stop offset="0%" stopColor="#10b981" />
             <stop offset="100%" stopColor="#6366f1" />
           </linearGradient>
-          {/* Arrow marker for future use */}
+          {/* Arrow marker */}
           <marker
             id="arrowhead"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
+            markerWidth="12"
+            markerHeight="10"
+            refX="10"
+            refY="5"
             orient="auto"
+            markerUnits="strokeWidth"
           >
-            <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
+            <polygon points="0 0, 12 5, 0 10, 2 5" fill="#6366f1" />
           </marker>
         </defs>
         {generateConnections()}
